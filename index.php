@@ -71,20 +71,36 @@ while($partido = $ultimosPartidos->fetch_assoc()){
     $sets = $stmtSets->get_result();
 
     $ganadosLocal = 0;
-    $ganadosVisitante = 0;
+$ganadosVisitante = 0;
 
-    while($set = $sets->fetch_assoc()){
+$marcadores = [];
 
-        if($set["vida_local"] > $set["vida_visitante"]){
-            $ganadosLocal++;
-        }elseif($set["vida_visitante"] > $set["vida_local"]){
-            $ganadosVisitante++;
-        }
+while($set = $sets->fetch_assoc()){
 
+    $marcadores[] = [
+        "local" => $set["vida_local"],
+        "visitante" => $set["vida_visitante"]
+    ];
+
+    if($set["vida_local"] > $set["vida_visitante"]){
+        $ganadosLocal++;
+    }elseif($set["vida_visitante"] > $set["vida_local"]){
+        $ganadosVisitante++;
     }
+
+}
+
+if (count($marcadores) == 1) {
+
+    $partido["marcador_local"] = $marcadores[0]["local"];
+    $partido["marcador_visitante"] = $marcadores[0]["visitante"];
+
+} else {
 
     $partido["marcador_local"] = $ganadosLocal;
     $partido["marcador_visitante"] = $ganadosVisitante;
+
+}
 
     $partidosInicio[] = $partido;
 }

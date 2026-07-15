@@ -811,6 +811,7 @@ while ($set = $sets->fetch_assoc()) {
     }
 
 }
+$totalSets = count($marcadores);
 
                     ?>
 
@@ -823,8 +824,22 @@ while ($set = $sets->fetch_assoc()) {
                         <div class="resultado">
 
     <div class="resultado-sets">
-        <?php echo $setsGanadosLocal; ?> - <?php echo $setsGanadosVisitante; ?>
-    </div>
+
+<?php if ($totalSets == 1) { ?>
+
+    <?php echo $marcadores[0]["local"]; ?>
+    -
+    <?php echo $marcadores[0]["visitante"]; ?>
+
+<?php } else { ?>
+
+    <?php echo $setsGanadosLocal; ?>
+    -
+    <?php echo $setsGanadosVisitante; ?>
+
+<?php } ?>
+
+</div>
 
     <div class="resultado-detalle">
 
@@ -922,6 +937,7 @@ while ($set = $sets->fetch_assoc()) {
     }
 
 }
+$totalSets = count($marcadores);
 ?>
 
 <div class="partido">
@@ -934,8 +950,22 @@ while ($set = $sets->fetch_assoc()) {
     <div class="resultado">
 
     <div class="resultado-sets">
-        <?php echo $setsGanadosLocal; ?> - <?php echo $setsGanadosVisitante; ?>
-    </div>
+
+<?php if ($totalSets == 1) { ?>
+
+    <?php echo $marcadores[0]["local"]; ?>
+    -
+    <?php echo $marcadores[0]["visitante"]; ?>
+
+<?php } else { ?>
+
+    <?php echo $setsGanadosLocal; ?>
+    -
+    <?php echo $setsGanadosVisitante; ?>
+
+<?php } ?>
+
+</div>
 
     <div class="resultado-detalle">
         <?php foreach ($marcadores as $set) { ?>
