@@ -3,11 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-07-2026 a las 16:14:25
+-- Tiempo de generación: 15-07-2026 a las 16:48:54
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
-SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -21,8 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `pokemon_ultimate_league`
 --
-CREATE DATABASE IF NOT EXISTS `pokemon_ultimate_league` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `pokemon_ultimate_league`;
 
 -- --------------------------------------------------------
 
@@ -1007,7 +1004,6 @@ ALTER TABLE `sets`
 --
 ALTER TABLE `zonas_clasificacion`
   ADD CONSTRAINT `zonas_clasificacion_ibfk_1` FOREIGN KEY (`competicion_temporada_id`) REFERENCES `competiciones_temporadas` (`id`) ON DELETE CASCADE;
-SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
