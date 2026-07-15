@@ -101,7 +101,7 @@ foreach ($equipos as $equipo) {
 
 <meta charset="UTF-8">
 <title>Mundial</title>
-
+<link rel="icon" href="../img/icono.png" type="image/png">
 <link rel="stylesheet" href="../css/style.css">
 
 </head>

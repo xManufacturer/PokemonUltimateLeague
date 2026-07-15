@@ -23,6 +23,7 @@ $temporadas = $stmt->get_result();
 <head>
 <meta charset="UTF-8">
 <title>Mundial</title>
+<link rel="icon" href="../img/icono.png" type="image/png">
 <link rel="stylesheet" href="../css/style.css">
 </head>
 

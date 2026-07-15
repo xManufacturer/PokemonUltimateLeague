@@ -41,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Acceso administrador</title>
+    <link rel="icon" href="../img/icono.png" type="image/png">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 

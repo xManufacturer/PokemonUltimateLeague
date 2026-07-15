@@ -9,6 +9,7 @@ require_once 'proteger.php';
 <head>
     <meta charset="UTF-8">
     <title>Panel de Administración</title>
+    <link rel="icon" href="../img/icono.png" type="image/png">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 

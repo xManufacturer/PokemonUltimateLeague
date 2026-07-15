@@ -134,6 +134,7 @@ while ($fila = $resultado->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <title><?php echo $datos['competicion']; ?></title>
+    <link rel="icon" href="img/icono.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
