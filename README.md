@@ -1,6 +1,8 @@
 # Pokémon Ultimate League
 
-Aplicación web desarrollada en **PHP** y **MySQL** para gestionar competiciones Pokémon.
+Aplicación web desarrollada en **PHP** y **MySQL** para gestionar las competiciones del canal de YouTube **Pokémon Ultimate League**.
+
+https://www.youtube.com/@pokemonultimateleague
 
 ## Funcionalidades
 
@@ -30,4 +32,4 @@ Aplicación web desarrollada en **PHP** y **MySQL** para gestionar competiciones
 
 ## Autor
 
-Manuel Enrique Bernal Gallego - Manufacturer
+**Manuel Enrique Bernal Gallego (Manufacturer)**
