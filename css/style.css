@@ -430,13 +430,14 @@ select {
     display:flex;
     flex-direction:column;
     align-items:center;
-    min-width:90px;
+    width:100px;
+    flex-shrink:0;
 }
 
 .resultado-sets{
-    font-size:28px;
+    font-size:24px;
     font-weight:bold;
-    margin-bottom:6px;
+    white-space:nowrap;
 }
 
 .resultado-detalle{

@@ -119,10 +119,10 @@ $fila = $stmt->get_result()->fetch_assoc();
 $fechaActualizacion = "";
 
 if (!empty($fila["fecha_actualizacion"])) {
-    $fechaActualizacion = date(
-        "d/m/Y H:i",
-        strtotime($fila["fecha_actualizacion"])
-    );
+    $fecha = new DateTime($fila["fecha_actualizacion"], new DateTimeZone("UTC"));
+$fecha->setTimezone(new DateTimeZone("Europe/Madrid"));
+
+$fechaActualizacion = $fecha->format("d/m/Y H:i");
 }
 ?>
 

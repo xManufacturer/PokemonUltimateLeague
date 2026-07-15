@@ -841,19 +841,22 @@ $totalSets = count($marcadores);
 
 </div>
 
-    <div class="resultado-detalle">
+    <?php if (count($marcadores) > 1) { ?>
 
-        <?php foreach ($marcadores as $set) { ?>
+<div class="resultado-detalle">
 
-            <div>
-                <?php echo $set["local"]; ?>
-                -
-                <?php echo $set["visitante"]; ?>
-            </div>
+    <?php foreach ($marcadores as $set) { ?>
 
-        <?php } ?>
+        <div>
+            <?php echo $set["local"]; ?> -
+            <?php echo $set["visitante"]; ?>
+        </div>
 
-    </div>
+    <?php } ?>
+
+</div>
+
+<?php } ?>
 
 </div>
                     
@@ -967,13 +970,22 @@ $totalSets = count($marcadores);
 
 </div>
 
-    <div class="resultado-detalle">
-        <?php foreach ($marcadores as $set) { ?>
-            <div>
-                <?php echo $set["local"]; ?> - <?php echo $set["visitante"]; ?>
-            </div>
-        <?php } ?>
-    </div>
+    <?php if (count($marcadores) > 1) { ?>
+
+<div class="resultado-detalle">
+
+    <?php foreach ($marcadores as $set) { ?>
+
+        <div>
+            <?php echo $set["local"]; ?> -
+            <?php echo $set["visitante"]; ?>
+        </div>
+
+    <?php } ?>
+
+</div>
+
+<?php } ?>
 
 </div>
 
