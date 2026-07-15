@@ -258,6 +258,8 @@ $partidos = $stmt->get_result();
         $stmtSets->execute();
         $sets = $stmtSets->get_result();
 
+        $totalSets = $sets->num_rows;
+
         $totalLocal = 0;
 $totalVisitante = 0;
 
@@ -286,7 +288,21 @@ while ($set = $sets->fetch_assoc()) {
         </div>
 
         <div class="resultado">
-    <?php echo $setsGanadosLocal; ?> - <?php echo $setsGanadosVisitante; ?>
+
+    <div class="resultado-sets">
+
+    <?php if ($totalSets == 1) { ?>
+
+        <?php echo $totalLocal; ?> - <?php echo $totalVisitante; ?>
+
+    <?php } else { ?>
+
+        <?php echo $setsGanadosLocal; ?> - <?php echo $setsGanadosVisitante; ?>
+
+    <?php } ?>
+
+    </div>
+
 </div>
 
         <div class="equipo visitante">
