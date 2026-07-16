@@ -42,7 +42,8 @@ function obtenerClasificacion($conn, $competicion_temporada) {
     $sql = "SELECT
             id,
             local_id,
-            visitante_id
+            visitante_id,
+            fase
         FROM partidos
         WHERE competicion_temporada_id = ?";
 
@@ -70,7 +71,11 @@ function obtenerClasificacion($conn, $competicion_temporada) {
         $psLocal = 0;
         $psVisitante = 0;
 
+        $totalSets = 0;
+
         while ($set = $sets->fetch_assoc()) {
+            $totalSets++;
+        
             $psLocal += $set["vida_local"];
             $psVisitante += $set["vida_visitante"];
 
@@ -104,6 +109,21 @@ function obtenerClasificacion($conn, $competicion_temporada) {
         $clasificacion[$visitante]["diferencia"] =
             $clasificacion[$visitante]["ps_favor"] -
             $clasificacion[$visitante]["ps_contra"];
+
+        // En ligas, un solo combate solo tiene vencedor si alguien llega a 0 PS
+if ($partido["fase"] == "L" && $totalSets == 1) {
+
+    if ($psLocal == 0) {
+        $setsGanadosLocal = 0;
+        $setsGanadosVisitante = 1;
+    } elseif ($psVisitante == 0) {
+        $setsGanadosLocal = 1;
+        $setsGanadosVisitante = 0;
+    } else {
+        $setsGanadosLocal = 0;
+        $setsGanadosVisitante = 0;
+    }
+}
 
         // Resultado del combate
         if ($setsGanadosLocal > $setsGanadosVisitante) {
@@ -227,6 +247,7 @@ function obtenerClasificacionGrupo($conn, $competicion_temporada, $grupo) {
                 $setsGanadosVisitante++;
             }
         }
+
 
         // Participantes del partido
         $local = $partido["local_id"];
