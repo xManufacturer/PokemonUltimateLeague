@@ -113,13 +113,23 @@ function obtenerClasificacion($conn, $competicion_temporada) {
         // En ligas, un solo combate solo tiene vencedor si alguien llega a 0 PS
 if ($partido["fase"] == "L" && $totalSets == 1) {
 
-    if ($psLocal == 0) {
+    if ($psLocal == 0 && $psVisitante == 0) {
+        // Ambos KO → empate
+        $setsGanadosLocal = 0;
+        $setsGanadosVisitante = 0;
+
+    } elseif ($psLocal == 0) {
+        // Solo cae el local
         $setsGanadosLocal = 0;
         $setsGanadosVisitante = 1;
+
     } elseif ($psVisitante == 0) {
+        // Solo cae el visitante
         $setsGanadosLocal = 1;
         $setsGanadosVisitante = 0;
+
     } else {
+        // Nadie cae → empate
         $setsGanadosLocal = 0;
         $setsGanadosVisitante = 0;
     }
