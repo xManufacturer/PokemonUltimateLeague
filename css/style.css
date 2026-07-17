@@ -417,8 +417,8 @@ select {
 }
 
 .contenedor-jornada-actual.ultima-eliminatoria .jornada {
-    width: 480px;
-    
+    width: fit-content;
+    min-width: 620px;
 }
 
 .resultado{

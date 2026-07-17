@@ -184,19 +184,28 @@ $claseUltima = ($totalPartidos == 1) ? " ultima-eliminatoria" : "";
 <div class="contenedor-jornada-actual<?php echo $claseUltima; ?>">
     <div class="jornada">
             <h3>
+
 <?php
 if ($datos["competicion"] == "Champions League") {
 
     if ($faseActual == "SF") {
         echo "Semifinales";
+
     } elseif ($faseActual == "F") {
         echo "Final";
+
     } else {
         echo "Jornada ".$jornadaActual;
     }
 
+} elseif ($datos["tipo"] == "legendary" && $datos["jornadas"] == 1) {
+
+    echo "Final";
+
 } else {
+
     echo "Jornada ".$jornadaActual;
+
 }
 ?>
 </h3>
@@ -961,9 +970,15 @@ $totalSets = count($marcadores);
         }
         ?>
         <div class="jornada">
-
-    <h3><?php echo $titulo; ?></h3>
-
+<h3>
+<?php
+if ($datos["tipo"] == "legendary") {
+    echo "Final";
+} else {
+    echo "Jornada " . $jornada;
+}
+?>
+</h3>
 <?php
 while ($partido = $partidos->fetch_assoc()) {
 
