@@ -271,10 +271,10 @@ while ($set = $sets->fetch_assoc()) {
     $totalLocal += $set["vida_local"];
     $totalVisitante += $set["vida_visitante"];
 
-    if ($set["vida_local"] > $set["vida_visitante"]) {
-        $setsGanadosLocal++;
-    } elseif ($set["vida_visitante"] > $set["vida_local"]) {
+    if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
         $setsGanadosVisitante++;
+    } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+        $setsGanadosLocal++;
     }
 
 }
@@ -820,10 +820,10 @@ while ($set = $sets->fetch_assoc()) {
         "visitante" => $set["vida_visitante"]
     ];
 
-    if ($set["vida_local"] > $set["vida_visitante"]) {
-        $setsGanadosLocal++;
-    } elseif ($set["vida_visitante"] > $set["vida_local"]) {
+    if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
         $setsGanadosVisitante++;
+    } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+        $setsGanadosLocal++;
     }
 
 }
@@ -949,10 +949,10 @@ while ($set = $sets->fetch_assoc()) {
         "visitante" => $set["vida_visitante"]
     ];
 
-    if ($set["vida_local"] > $set["vida_visitante"]) {
-        $setsGanadosLocal++;
-    } elseif ($set["vida_visitante"] > $set["vida_local"]) {
+    if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
         $setsGanadosVisitante++;
+    } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+        $setsGanadosLocal++;
     }
 
 }
