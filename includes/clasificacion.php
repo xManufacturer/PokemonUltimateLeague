@@ -74,17 +74,35 @@ function obtenerClasificacion($conn, $competicion_temporada) {
         $totalSets = 0;
 
         while ($set = $sets->fetch_assoc()) {
-            $totalSets++;
-        
-            $psLocal += $set["vida_local"];
-            $psVisitante += $set["vida_visitante"];
+    $totalSets++;
 
-            if ($set["vida_local"] > $set["vida_visitante"]) {
-                $setsGanadosLocal++;
-            } elseif ($set["vida_visitante"] > $set["vida_local"]) {
-                $setsGanadosVisitante++;
-            }
+    $psLocal += $set["vida_local"];
+    $psVisitante += $set["vida_visitante"];
+
+    if ($partido["fase"] == "L") {
+
+        // Liga: gana únicamente quien deja al rival a 0.
+        if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
+            $setsGanadosVisitante++;
+        } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+            $setsGanadosLocal++;
         }
+
+    } else {
+
+        // Champions, Copa, eliminatorias...
+        if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
+            $setsGanadosVisitante++;
+        } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+            $setsGanadosLocal++;
+        } else {
+            // Si nadie cae a 0 (o ambos caen), el set es empate.
+            $setsGanadosLocal++;
+            $setsGanadosVisitante++;
+        }
+
+    }
+}
 
         // Participantes del partido
         $local = $partido["local_id"];
