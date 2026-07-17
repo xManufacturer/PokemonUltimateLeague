@@ -205,23 +205,48 @@ if ($datos["competicion"] == "Champions League") {
 
     if ($datos["competicion"] == "Champions League") {
 
-    $sql = "SELECT
-                pa.id,
-                pl.nombre AS local,
-                pl.imagen AS imagen_local,
-                pv.nombre AS visitante,
-                pv.imagen AS imagen_visitante
-            FROM partidos pa
-            JOIN participantes l ON pa.local_id = l.id
-            JOIN pokemon pl ON l.pokemon_id = pl.id
-            JOIN participantes v ON pa.visitante_id = v.id
-            JOIN pokemon pv ON v.pokemon_id = pv.id
-            WHERE pa.competicion_temporada_id = ?
-            AND pa.fase = ?
-            ORDER BY pa.id";
+    if ($faseActual == "SF" || $faseActual == "F") {
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $id, $faseActual);
+        $sql = "SELECT
+                    pa.id,
+                    pl.nombre AS local,
+                    pl.imagen AS imagen_local,
+                    pv.nombre AS visitante,
+                    pv.imagen AS imagen_visitante
+                FROM partidos pa
+                JOIN participantes l ON pa.local_id = l.id
+                JOIN pokemon pl ON l.pokemon_id = pl.id
+                JOIN participantes v ON pa.visitante_id = v.id
+                JOIN pokemon pv ON v.pokemon_id = pv.id
+                WHERE pa.competicion_temporada_id = ?
+                AND pa.fase = ?
+                ORDER BY pa.id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("is", $id, $faseActual);
+
+    } else {
+
+        $sql = "SELECT
+                    pa.id,
+                    pl.nombre AS local,
+                    pl.imagen AS imagen_local,
+                    pv.nombre AS visitante,
+                    pv.imagen AS imagen_visitante
+                FROM partidos pa
+                JOIN participantes l ON pa.local_id = l.id
+                JOIN pokemon pl ON l.pokemon_id = pl.id
+                JOIN participantes v ON pa.visitante_id = v.id
+                JOIN pokemon pv ON v.pokemon_id = pv.id
+                WHERE pa.competicion_temporada_id = ?
+                AND pa.jornada = ?
+                AND pa.fase LIKE 'G%'
+                ORDER BY pa.fase, pa.id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ii", $id, $jornadaActual);
+
+    }
 
 } else {
 
