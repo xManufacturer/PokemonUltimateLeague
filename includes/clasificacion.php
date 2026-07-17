@@ -266,15 +266,20 @@ function obtenerClasificacionGrupo($conn, $competicion_temporada, $grupo) {
         $psVisitante = 0;
 
         while ($set = $sets->fetch_assoc()) {
-            $psLocal += $set["vida_local"];
-            $psVisitante += $set["vida_visitante"];
 
-            if ($set["vida_local"] > $set["vida_visitante"]) {
-                $setsGanadosLocal++;
-            } elseif ($set["vida_visitante"] > $set["vida_local"]) {
-                $setsGanadosVisitante++;
-            }
-        }
+    $psLocal += $set["vida_local"];
+    $psVisitante += $set["vida_visitante"];
+
+    if ($set["vida_local"] == 0 && $set["vida_visitante"] > 0) {
+        $setsGanadosVisitante++;
+    } elseif ($set["vida_visitante"] == 0 && $set["vida_local"] > 0) {
+        $setsGanadosLocal++;
+    } else {
+        // Empate de set
+        $setsGanadosLocal++;
+        $setsGanadosVisitante++;
+    }
+}
 
 
         // Participantes del partido
