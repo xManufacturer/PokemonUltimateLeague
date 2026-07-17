@@ -832,11 +832,25 @@ $partidos = $stmt->get_result();
                 <div class="jornada">
                 <h3>
 <?php
-if ($datos["tipo"] == "legendary" && $jornada == 0) {
+
+if ($datos["competicion"] == "Champions League") {
+
+    if ($jornada == 4) {
+        echo "Semifinales";
+    } else {
+        echo "Jornada ".$jornada;
+    }
+
+} elseif ($datos["tipo"] == "legendary" && $datos["jornadas"] == 1) {
+
     echo "Final";
+
 } else {
-    echo "Jornada " . $jornada;
+
+    echo "Jornada ".$jornada;
+
 }
+
 ?>
 </h3>
 
@@ -972,11 +986,7 @@ $totalSets = count($marcadores);
         <div class="jornada">
 <h3>
 <?php
-if ($datos["tipo"] == "legendary") {
-    echo "Final";
-} else {
-    echo "Jornada " . $jornada;
-}
+echo $titulo;
 ?>
 </h3>
 <?php
