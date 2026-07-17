@@ -772,7 +772,13 @@ $unaColumna = ($totalParticipantes <= 10);
     <div class="contenedor-jornadas">
 
         <?php
-        for ($jornada = 1; $jornada <= $datos["jornadas"]; $jornada++) {
+        $inicio = 1;
+
+if ($datos["tipo"] == "legendary" && $datos["jornadas"] == 1) {
+    $inicio = 0;
+}
+
+for ($jornada = $inicio; $jornada <= $datos["jornadas"]; $jornada++) {
         
                 $sql = "SELECT
             pa.id,
@@ -815,7 +821,15 @@ $partidos = $stmt->get_result();
                 ?>
 
                 <div class="jornada">
-                <h3>Jornada <?php echo $jornada; ?></h3>
+                <h3>
+<?php
+if ($datos["tipo"] == "legendary" && $jornada == 0) {
+    echo "Final";
+} else {
+    echo "Jornada " . $jornada;
+}
+?>
+</h3>
 
                 <?php
                 while ($partido = $partidos->fetch_assoc()) {

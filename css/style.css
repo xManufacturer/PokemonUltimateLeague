@@ -229,6 +229,7 @@ select {
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     margin: 10px 0;
+    min-width: 520px;
 }
 
 .equipo {
@@ -440,6 +441,7 @@ select {
     font-size:15px;
     line-height:18px;
     color:blueviolet;
+    font-weight: bold;
 }
 
 .resultado-detalle div{
