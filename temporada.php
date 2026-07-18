@@ -515,6 +515,14 @@ foreach ($clasificacionGrupo as $fila) {
             $clases[] = strtolower(str_replace(" ", "-", $zona["nombre"]));
         }
     }
+    if (!empty($fila["plaza_especial"])) {
+
+    if ($fila["plaza_especial"] == "Champions League") {
+        $clases = array_diff($clases, ["mundial"]);
+    }
+
+    $clases[] = strtolower(str_replace(" ", "-", $fila["plaza_especial"]));
+}
 
 ?>
 
