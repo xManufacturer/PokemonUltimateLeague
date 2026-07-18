@@ -122,7 +122,7 @@ if (!empty($fila["fecha_actualizacion"])) {
     $fecha = new DateTime($fila["fecha_actualizacion"], new DateTimeZone("UTC"));
 $fecha->setTimezone(new DateTimeZone("Europe/Madrid"));
 
-$fechaActualizacion = $fecha->format("d/m/Y H:i");
+$fechaActualizacion = $fecha->format("d/m/Y");
 }
 ?>
 
