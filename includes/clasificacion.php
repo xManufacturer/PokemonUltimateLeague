@@ -783,16 +783,28 @@ function obtenerClasificacionHistorica($conn, $region) {
 
     $ordenar = function($a, $b) {
 
-        if ($a["puntos"] != $b["puntos"]) {
-            return $b["puntos"] <=> $a["puntos"];
-        }
+    // Los Pokémon con 0 combates van siempre al final
+    if ($a["com"] == 0 && $b["com"] > 0) {
+        return 1;
+    }
 
-        if ($a["diferencia"] != $b["diferencia"]) {
-            return $b["diferencia"] <=> $a["diferencia"];
-        }
+    if ($a["com"] > 0 && $b["com"] == 0) {
+        return -1;
+    }
 
-        return $b["ps_favor"] <=> $a["ps_favor"];
-    };
+    // Primero, puntos
+    if ($a["puntos"] != $b["puntos"]) {
+        return $b["puntos"] <=> $a["puntos"];
+    }
+
+    // Después, diferencia de PS
+    if ($a["diferencia"] != $b["diferencia"]) {
+        return $b["diferencia"] <=> $a["diferencia"];
+    }
+
+    // Finalmente, PS a favor
+    return $b["ps_favor"] <=> $a["ps_favor"];
+};
 
     usort($primera, $ordenar);
     usort($segunda, $ordenar);
