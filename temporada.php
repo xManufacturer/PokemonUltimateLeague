@@ -9,6 +9,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $id = (int) $_GET['id'];
 
 $sql = "SELECT
+            ct.competicion_id,
             c.nombre AS competicion,
             c.tipo,
             t.numero AS temporada,
@@ -18,7 +19,7 @@ $sql = "SELECT
         JOIN competiciones c ON ct.competicion_id = c.id
         JOIN temporadas t ON ct.temporada_id = t.id
         WHERE ct.id = ?";
-        
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -30,7 +31,58 @@ if ($competicion->num_rows === 0) {
 
 $datos = $competicion->fetch_assoc();
 
-if ($datos["competicion"] == "Champions League") {
+// ============================================================
+// BOTÓN PARA IR A LA PROMOCIÓN CORRESPONDIENTE
+// ============================================================
+
+$idPromocion = null;
+
+if ($datos["tipo"] == "segunda") {
+
+    $sqlPromocion = "SELECT ct.id
+                     FROM competiciones_temporadas ct
+                     JOIN competiciones c
+                          ON ct.competicion_id = c.id
+                     WHERE ct.segunda_de_id = ?
+                     AND c.tipo = 'promocion'
+                     LIMIT 1";
+
+    $stmtPromocion = $conn->prepare($sqlPromocion);
+    $stmtPromocion->bind_param("i", $id);
+    $stmtPromocion->execute();
+
+    $resultadoPromocion = $stmtPromocion->get_result();
+
+    if ($resultadoPromocion->num_rows > 0) {
+        $filaPromocion = $resultadoPromocion->fetch_assoc();
+        $idPromocion = (int) $filaPromocion["id"];
+    }
+}
+
+// ============================================================
+// DATOS DE LA ÚLTIMA JORNADA / FASE
+// ============================================================
+if ($datos["tipo"] == "segunda" || $datos["tipo"] == "promocion") {
+
+    $sql = "SELECT fase
+            FROM partidos
+            WHERE competicion_temporada_id = ?
+            ORDER BY id DESC
+            LIMIT 1";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $ultima = $stmt->get_result()->fetch_assoc();
+
+    if ($ultima) {
+        $faseActual = $ultima["fase"];
+    } else {
+        $faseActual = null;
+    }
+
+} elseif ($datos["competicion"] == "Champions League") {
 
     $sql = "SELECT jornada, fase
             FROM partidos
@@ -54,17 +106,20 @@ if ($datos["competicion"] == "Champions League") {
 
 } else {
 
-$sql = "SELECT MAX(jornada) AS jornada_actual
-        FROM partidos
-        WHERE competicion_temporada_id = ?";
+    $sql = "SELECT MAX(jornada) AS jornada_actual
+            FROM partidos
+            WHERE competicion_temporada_id = ?";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
 
-$jornadaActual = $stmt->get_result()->fetch_assoc()["jornada_actual"];
+    $jornadaActual = $stmt->get_result()->fetch_assoc()["jornada_actual"];
 }
 
+// ============================================================
+// CLASIFICACIÓN
+// ============================================================
 if ($datos["competicion"] == "Champions League") {
 
     $clasificacionGrupos = [];
@@ -91,23 +146,35 @@ if ($datos["competicion"] == "Champions League") {
 } else {
     if ($datos["tipo"] == "copa") {
 
-    $clasificacionesGrupos = [];
+        $clasificacionesGrupos = [];
 
-    for ($i = 0; $i < $datos["grupos"]; $i++) {
+        for ($i = 0; $i < $datos["grupos"]; $i++) {
 
-        $grupo = chr(65 + $i);
+            $grupo = chr(65 + $i);
 
-        $clasificacionesGrupos[$grupo] =
-            obtenerClasificacionGrupo($conn, $id, $grupo);
+            $clasificacionesGrupos[$grupo] =
+                obtenerClasificacionGrupo($conn, $id, $grupo);
+        }
+
+    } elseif ($datos["tipo"] == "segunda") {
+
+        // Segunda División tiene una única clasificación
+        $clasificacion = obtenerClasificacion($conn, $id);
+
+    } elseif ($datos["tipo"] == "promocion") {
+
+        // Promoción no necesita clasificación
+
+    } else {
+
+        $clasificacion = obtenerClasificacion($conn, $id);
+
     }
-
-} else {
-
-    $clasificacion = obtenerClasificacion($conn, $id);
-
-}
 }
 
+// ============================================================
+// ZONAS DE CLASIFICACIÓN
+// ============================================================
 $sql = "SELECT
             nombre,
             posicion_inicio,
@@ -137,79 +204,393 @@ while ($fila = $resultado->fetch_assoc()) {
     <link rel="icon" href="img/icono.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TZL2J8ZT');</script>
-<!-- End Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+i:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TZL2J8ZT');</script>
+    <!-- End Google Tag Manager -->
 </head>
 
 <body>
     <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZL2J8ZT"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZL2J8ZT"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <h1><?php echo $datos['competicion']; ?></h1>
     <h2>Temporada <?php echo $datos['temporada']; ?></h2>
     <a href="index.php" class="btn-inicio">
         <img src="img/inicio.png" alt="Inicio">
     </a>
 
+    <?php
+// ============================================================
+// BOTÓN PARA IR A SEGUNDA DIVISIÓN DE ESTA MISMA TEMPORADA
+// ============================================================
+
+$idSegunda = null;
+
+$sqlSegunda = "SELECT ct.id
+               FROM competiciones_temporadas ct
+               JOIN competiciones c 
+                    ON ct.competicion_id = c.id
+               WHERE ct.segunda_de_id = ?
+               AND c.tipo = 'segunda'
+               LIMIT 1";
+
+$stmtSegunda = $conn->prepare($sqlSegunda);
+$stmtSegunda->bind_param("i", $id);
+$stmtSegunda->execute();
+
+$resultadoSegunda = $stmtSegunda->get_result();
+
+if ($resultadoSegunda->num_rows > 0) {
+    $filaSegunda = $resultadoSegunda->fetch_assoc();
+    $idSegunda = (int)$filaSegunda["id"];
+}
+?>
+
+<?php if ($idSegunda !== null && $datos["tipo"] == "liga") { ?>
+
+<div class="tarjetas">
+
+    <a href="temporada.php?id=<?php echo $idSegunda; ?>" class="tarjeta-segunda">
+        Segunda División
+    </a>
+
+</div>
+
+<?php } ?>
+
+<?php
+// ============================================================
+// BOTÓN PARA IR A LA PROMOCIÓN DE ESTA SEGUNDA DIVISIÓN
+// ============================================================
+?>
+
+<?php if ($idPromocion !== null) { ?>
+
+<div class="tarjetas">
+
+    <a href="temporada.php?id=<?php echo $idPromocion; ?>" class="tarjeta-segunda">
+        Promoción Ascenso
+    </a>
+
+</div>
+
+<?php } ?>
+    <!-- ======================================================
+         SEGUNDA DIVISIÓN
+         ====================================================== -->
+<?php if ($datos["tipo"] == "segunda" || $datos["tipo"] == "promocion") { ?>
+
+    <h2>Fases</h2>
+
+    <?php
+
+    if ($datos["tipo"] == "segunda") {
+
+        $fases = [
+            "RP"  => "Ronda Previa",
+            "R1"  => "Ronda 1",
+            "R2"  => "Ronda 2",
+            "R3"  => "Ronda 3",
+            "OCT" => "Octavos",
+            "QF"  => "Cuartos",
+            "SF"  => "Semifinales",
+            "F"   => "Final"
+        ];
+
+    } else {
+
+        $fases = [
+            "F" => "Final"
+        ];
+
+    }
+
+    ?>
+
+    <div class="contenedor-fases">
+
+        <?php foreach ($fases as $codigoFase => $nombreFase) { ?>
+
+            <?php
+
+            $sql = "SELECT
+                        pa.id,
+                        pl.nombre AS local,
+                        pl.imagen AS imagen_local,
+                        pv.nombre AS visitante,
+                        pv.imagen AS imagen_visitante
+                    FROM partidos pa
+
+                    JOIN participantes l
+                        ON pa.local_id = l.id
+
+                    JOIN pokemon pl
+                        ON l.pokemon_id = pl.id
+
+                    JOIN participantes v
+                        ON pa.visitante_id = v.id
+
+                    JOIN pokemon pv
+                        ON v.pokemon_id = pv.id
+
+                    WHERE pa.competicion_temporada_id = ?
+                    AND pa.fase = ?
+
+                    ORDER BY pa.id";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("is", $id, $codigoFase);
+            $stmt->execute();
+
+            $partidosFase = $stmt->get_result();
+
+            if ($partidosFase->num_rows === 0) {
+                continue;
+            }
+
+            ?>
+
+            <div class="fase">
+
+                <h3 class="titulo-fase">
+                    <?php echo $nombreFase; ?>
+                </h3>
+
+                <div class="partidos-fase <?php echo ($partidosFase->num_rows === 1) ? 'un-solo-partido' : ''; ?>">
+
+                    <?php while ($partido = $partidosFase->fetch_assoc()) { ?>
+
+                        <?php
+
+                        $sqlSets = "SELECT
+                                        vida_local,
+                                        vida_visitante
+                                    FROM sets
+                                    WHERE partido_id = ?";
+
+                        $stmtSets = $conn->prepare($sqlSets);
+                        $stmtSets->bind_param("i", $partido["id"]);
+                        $stmtSets->execute();
+
+                        $sets = $stmtSets->get_result();
+
+                        $marcadores = [];
+
+                        $setsGanadosLocal = 0;
+                        $setsGanadosVisitante = 0;
+
+                        while ($set = $sets->fetch_assoc()) {
+
+                            $marcadores[] = [
+                                "local" => $set["vida_local"],
+                                "visitante" => $set["vida_visitante"]
+                            ];
+
+                            if (
+                                $set["vida_local"] == 0 &&
+                                $set["vida_visitante"] > 0
+                            ) {
+
+                                $setsGanadosVisitante++;
+
+                            } elseif (
+                                $set["vida_visitante"] == 0 &&
+                                $set["vida_local"] > 0
+                            ) {
+
+                                $setsGanadosLocal++;
+
+                            }
+
+                        }
+
+                        $totalSets = count($marcadores);
+
+                        ?>
+
+                        <div class="partido">
+
+                            <div class="equipo local">
+
+                                <img
+                                    src="img/pokemon/<?php echo $partido["imagen_local"]; ?>"
+                                    width="70"
+                                    alt="<?php echo $partido["local"]; ?>"
+                                >
+
+                                <span>
+                                    <?php echo $partido["local"]; ?>
+                                </span>
+
+                            </div>
+
+
+                            <div class="resultado">
+
+                                <div class="resultado-sets">
+
+                                    <?php if ($totalSets === 1) { ?>
+
+                                        <?php echo $marcadores[0]["local"]; ?>
+                                        -
+                                        <?php echo $marcadores[0]["visitante"]; ?>
+
+                                    <?php } else { ?>
+
+                                        <?php echo $setsGanadosLocal; ?>
+                                        -
+                                        <?php echo $setsGanadosVisitante; ?>
+
+                                    <?php } ?>
+
+                                </div>
+
+
+                                <?php if ($totalSets > 1) { ?>
+
+                                    <div class="resultado-detalle">
+
+                                        <?php foreach ($marcadores as $set) { ?>
+
+                                            <div>
+                                                <?php echo $set["local"]; ?>
+                                                -
+                                                <?php echo $set["visitante"]; ?>
+                                            </div>
+
+                                        <?php } ?>
+
+                                    </div>
+
+                                <?php } ?>
+
+                            </div>
+
+
+                            <div class="equipo visitante">
+
+                                <span>
+                                    <?php echo $partido["visitante"]; ?>
+                                </span>
+
+                                <img
+                                    src="img/pokemon/<?php echo $partido["imagen_visitante"]; ?>"
+                                    width="70"
+                                    alt="<?php echo $partido["visitante"]; ?>"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    <?php } ?>
+
+                </div>
+
+            </div>
+
+        <?php } ?>
+
+    </div>
+
+<?php } ?>
+
+<?php if ($datos["tipo"] != "segunda" && $datos["tipo"] != "promocion") { ?>
+
     <h2>Última Jornada</h2>
 
 <?php
+
 $claseUltima = "";
-
-if (
-    isset($faseActual) &&
-    ($faseActual == "SF" || $faseActual == "F")
-) {
-    $claseUltima = " ultima-eliminatoria";
-}
-
 
 $sql = "SELECT COUNT(*) total
         FROM partidos
         WHERE competicion_temporada_id = ?";
 
-if ($datos["competicion"] == "Champions League") {
+if (
+    $datos["competicion"] == "Champions League" ||
+    $datos["tipo"] == "segunda" ||
+    $datos["tipo"] == "promocion"
+) {
+
     $sql .= " AND fase = ?";
+
 } else {
+
     $sql .= " AND jornada = ?";
 }
 
 $stmt = $conn->prepare($sql);
 
-if ($datos["competicion"] == "Champions League") {
+if (
+    $datos["competicion"] == "Champions League" ||
+    $datos["tipo"] == "segunda" ||
+    $datos["tipo"] == "promocion"
+) {
+
     $stmt->bind_param("is", $id, $faseActual);
+
 } else {
+
     $stmt->bind_param("ii", $id, $jornadaActual);
 }
 
 $stmt->execute();
+
 $totalPartidos = $stmt->get_result()->fetch_assoc()["total"];
 
-$claseUltima = ($totalPartidos == 1) ? " ultima-eliminatoria" : "";
+$claseUltima = ($totalPartidos == 1)
+    ? " ultima-eliminatoria"
+    : "";
+
 ?>
 <div class="contenedor-jornada-actual<?php echo $claseUltima; ?>">
     <div class="jornada">
             <h3>
 
 <?php
-if ($datos["competicion"] == "Champions League") {
+
+if (
+    $datos["tipo"] == "segunda" ||
+    $datos["tipo"] == "promocion"
+) {
+
+    $nombresFase = [
+        "RP"  => "Ronda Previa",
+        "R1"  => "Ronda 1",
+        "R2"  => "Ronda 2",
+        "R3"  => "Ronda 3",
+        "OCT" => "Octavos",
+        "QF"  => "Cuartos",
+        "SF"  => "Semifinales",
+        "F"   => "Final"
+    ];
+
+    echo $nombresFase[$faseActual] ?? $faseActual;
+
+} elseif ($datos["competicion"] == "Champions League") {
 
     if ($faseActual == "SF") {
+
         echo "Semifinales";
 
     } elseif ($faseActual == "F") {
+
         echo "Final";
 
     } else {
+
         echo "Jornada ".$jornadaActual;
     }
 
-} elseif ($datos["tipo"] == "legendary" && $datos["jornadas"] == 1) {
+} elseif (
+    $datos["tipo"] == "legendary" &&
+    $datos["jornadas"] == 1
+) {
 
     echo "Final";
 
@@ -221,9 +602,37 @@ if ($datos["competicion"] == "Champions League") {
 ?>
 </h3>
             <div class="partidos-jornada-actual">
-        <?php
+    <?php
 
-    if ($datos["competicion"] == "Champions League") {
+if (
+    $datos["tipo"] == "segunda" ||
+    $datos["tipo"] == "promocion"
+) {
+
+    /*
+     * Segunda División y Promoción
+     * funcionan mediante fases, no mediante jornadas.
+     */
+
+    $sql = "SELECT
+                pa.id,
+                pl.nombre AS local,
+                pl.imagen AS imagen_local,
+                pv.nombre AS visitante,
+                pv.imagen AS imagen_visitante
+            FROM partidos pa
+            JOIN participantes l ON pa.local_id = l.id
+            JOIN pokemon pl ON l.pokemon_id = pl.id
+            JOIN participantes v ON pa.visitante_id = v.id
+            JOIN pokemon pv ON v.pokemon_id = pv.id
+            WHERE pa.competicion_temporada_id = ?
+            AND pa.fase = ?
+            ORDER BY pa.id";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $id, $faseActual);
+
+} elseif ($datos["competicion"] == "Champions League") {
 
     if ($faseActual == "SF" || $faseActual == "F") {
 
@@ -270,6 +679,10 @@ if ($datos["competicion"] == "Champions League") {
 
 } else {
 
+    /*
+     * Liga, Copa y Legendary
+     */
+
     $sql = "SELECT
                 pa.id,
                 pl.nombre AS local,
@@ -291,6 +704,7 @@ if ($datos["competicion"] == "Champions League") {
 
 $stmt->execute();
 $partidos = $stmt->get_result();
+
 
     while ($partido = $partidos->fetch_assoc()) {
 
@@ -364,6 +778,9 @@ while ($set = $sets->fetch_assoc()) {
 
         </div>
     </div>
+<?php } ?>
+
+<?php if ($datos["tipo"] != "promocion" && $datos["tipo"] != "segunda") { ?>
 
     <h2>Clasificación</h2>
 
@@ -763,8 +1180,14 @@ $unaColumna = ($totalParticipantes <= 10);
 
 <?php } ?>
 
-        <?php if ($datos["tipo"] != "copa" && $datos["competicion"] != "Legendary League") { ?>
+<?php } ?>
 
+        <?php if (
+    $datos["tipo"] != "copa" &&
+    $datos["tipo"] != "promocion" &&
+    $datos["competicion"] != "Legendary League" &&
+    $datos["tipo"] != "segunda"
+) { ?>
 <div class="leyenda-clasificacion">
 
     <div class="item-leyenda">
@@ -795,6 +1218,8 @@ $unaColumna = ($totalParticipantes <= 10);
 </div>
 
 <?php } ?>
+
+    <?php if ($datos["tipo"] != "segunda" && $datos["tipo"] != "promocion") { ?>
 
     <h2>Jornadas</h2>
     <div class="contenedor-jornadas">
@@ -956,7 +1381,7 @@ $totalSets = count($marcadores);
 <?php } ?>
 
 </div>
-                    
+
                         <div class="equipo visitante">
                             <span><?php echo $partido["visitante"]; ?></span>
                             <img src="img/pokemon/<?php echo $partido["imagen_visitante"]; ?>" width="70">
@@ -1103,6 +1528,10 @@ $totalSets = count($marcadores);
     }
 }
 ?>
-    </div>
+        </div>
+
+<?php } ?>
+
+<?php include 'includes/footer.php'; ?>
 </body>
 </html>

@@ -9,13 +9,18 @@ h1, h2 {
 }
 
 .tarjetas {
-    margin-top:40px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
-    max-width:900px;
-    margin-left:auto;
-    margin-right:auto;
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tarjeta-segunda {
+    width: 300px;
+    justify-self: center;
 }
 
 .tarjetas a {
@@ -81,11 +86,18 @@ label {
     text-align:center;
 }
 
-select {
+select, 
+#local_busqueda,
+#visitante_busqueda {
     background-color: lightblue;
     color: blue;
     border-color: blue;
     border-width: 2px;
+}
+
+#local_busqueda,
+#visitante_busqueda {
+    width: 100px;
 }
 
 .btn-registrar {
@@ -208,8 +220,15 @@ select {
     grid-template-columns:repeat(3,1fr);
     gap:20px;
     margin-top:25px;
+    margin-left:50px;
+    margin-right:50px;
     color: blue;
     justify-items: center;
+    align-items: start;
+}
+
+.contenedor-jornadas .jornada:last-child:nth-child(3n + 1) {
+    grid-column: 2;
 }
 
 .jornada {
@@ -626,4 +645,73 @@ select {
 
 .pie-pagina a:hover {
     color: white;
+}
+
+.contenedor-fases {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin: 25px 0 40px;
+}
+
+.fase {
+    width: 1100px;
+    border: 2px solid blue;
+    border-radius: 12px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.titulo-fase {
+    margin: 0 0 20px;
+    text-align: center;
+    color: blue;
+}
+
+.partidos-fase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 30px;
+    color: blue;
+}
+
+.partidos-fase.un-solo-partido {
+    display: flex;
+    justify-content: center;
+}
+
+.partidos-fase.un-solo-partido .partido {
+    width: 50%;
+}
+
+.historica-segunda {
+    color: #666666;
+    background-color: lightgray;
+}
+
+.historica-segunda td {
+    color: #666666;
+}
+
+.historica-segunda td:first-child {
+    background-color: blue;
+    color: lightblue;
+}
+
+.historica-segunda .pokemon-clasificacion span {
+    color: #666666;
+}
+
+.historica-segunda .pokemon-clasificacion img {
+    border-color: #666666;
+}
+
+.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(2) td {
+    background-color: #fff5b1;
+}
+
+.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(2) td:first-child {
+    background-color: blue;
+    color: lightblue;
 }

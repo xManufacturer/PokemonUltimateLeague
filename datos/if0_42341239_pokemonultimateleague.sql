@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: sql303.infinityfree.com
--- Tiempo de generación: 18-07-2026 a las 08:07:18
+-- Tiempo de generación: 27-08-2026 a las 11:02:52
 -- Versión del servidor: 11.4.12-MariaDB
 -- Versión de PHP: 7.2.22
 
@@ -21,8 +21,6 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `if0_42341239_pokemonultimateleague`
 --
-CREATE DATABASE IF NOT EXISTS `if0_42341239_pokemonultimateleague` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `if0_42341239_pokemonultimateleague`;
 
 -- --------------------------------------------------------
 
@@ -30,7 +28,6 @@ USE `if0_42341239_pokemonultimateleague`;
 -- Estructura de tabla para la tabla `admin`
 --
 
-DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
   `id` int(11) NOT NULL,
   `usuario` varchar(50) NOT NULL,
@@ -50,32 +47,37 @@ INSERT INTO `admin` (`id`, `usuario`, `password`) VALUES
 -- Estructura de tabla para la tabla `competiciones`
 --
 
-DROP TABLE IF EXISTS `competiciones`;
 CREATE TABLE `competiciones` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
-  `tipo` enum('liga','copa','mundial','legendary') NOT NULL,
+  `tipo` enum('liga','segunda','promocion','copa','mundial','legendary') NOT NULL,
   `activa` tinyint(1) NOT NULL DEFAULT 1,
-  `ruta` varchar(255) DEFAULT NULL
+  `visible` tinyint(1) NOT NULL,
+  `ruta` varchar(255) DEFAULT NULL,
+  `region` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `competiciones`
 --
 
-INSERT INTO `competiciones` (`id`, `nombre`, `tipo`, `activa`, `ruta`) VALUES
-(1, 'Liga Kanto', 'liga', 1, 'kanto.php'),
-(2, 'Liga Johto', 'liga', 1, 'johto.php'),
-(3, 'Liga Hoenn', 'liga', 0, 'hoenn.php'),
-(4, 'Liga Sinnoh', 'liga', 0, 'sinnoh.php'),
-(5, 'Liga Teselia', 'liga', 0, 'teselia.php'),
-(6, 'Liga Kalos', 'liga', 0, 'kalos.php'),
-(7, 'Liga Alola', 'liga', 0, 'alola.php'),
-(8, 'Liga Galar', 'liga', 0, 'galar.php'),
-(9, 'Liga Paldea', 'liga', 0, 'paldea.php'),
-(10, 'Legendary League', 'legendary', 1, 'legendary.php'),
-(11, 'Champions League', 'copa', 1, 'champions.php'),
-(12, 'Mundial', 'mundial', 1, 'mundial.php');
+INSERT INTO `competiciones` (`id`, `nombre`, `tipo`, `activa`, `visible`, `ruta`, `region`) VALUES
+(1, 'Liga Kanto', 'liga', 1, 1, 'kanto.php', 'Kanto'),
+(2, 'Liga Johto', 'liga', 1, 1, 'johto.php', 'Johto'),
+(3, 'Liga Hoenn', 'liga', 0, 0, 'hoenn.php', 'Hoenn'),
+(4, 'Liga Sinnoh', 'liga', 0, 0, 'sinnoh.php', NULL),
+(5, 'Liga Teselia', 'liga', 0, 0, 'teselia.php', NULL),
+(6, 'Liga Kalos', 'liga', 0, 0, 'kalos.php', NULL),
+(7, 'Liga Alola', 'liga', 0, 0, 'alola.php', NULL),
+(8, 'Liga Galar', 'liga', 0, 0, 'galar.php', NULL),
+(9, 'Liga Paldea', 'liga', 0, 0, 'paldea.php', NULL),
+(10, 'Legendary League', 'legendary', 1, 1, 'legendary.php', NULL),
+(11, 'Champions League', 'copa', 1, 1, 'champions.php', NULL),
+(12, 'Mundial', 'mundial', 0, 1, 'mundial.php', NULL),
+(13, 'Segunda Kanto', 'segunda', 1, 0, 'kanto_segunda.php', 'Kanto'),
+(14, 'Segunda Johto', 'segunda', 1, 0, 'johto_segunda.php', 'Johto'),
+(15, 'Promoción Kanto', 'promocion', 1, 0, 'kanto_promocion.php', 'Kanto'),
+(16, 'Promoción Johto', 'promocion', 1, 0, 'johto_promocion.php', 'Johto');
 
 -- --------------------------------------------------------
 
@@ -83,7 +85,6 @@ INSERT INTO `competiciones` (`id`, `nombre`, `tipo`, `activa`, `ruta`) VALUES
 -- Estructura de tabla para la tabla `competiciones_temporadas`
 --
 
-DROP TABLE IF EXISTS `competiciones_temporadas`;
 CREATE TABLE `competiciones_temporadas` (
   `id` int(11) NOT NULL,
   `competicion_id` int(11) NOT NULL,
@@ -92,24 +93,35 @@ CREATE TABLE `competiciones_temporadas` (
   `grupos` int(11) DEFAULT NULL,
   `sets_fase` int(11) DEFAULT NULL,
   `sets_final` int(11) DEFAULT NULL,
-  `fecha_actualizacion` datetime DEFAULT NULL
+  `fecha_actualizacion` datetime DEFAULT NULL,
+  `segunda_de_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `competiciones_temporadas`
 --
 
-INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, `jornadas`, `grupos`, `sets_fase`, `sets_final`, `fecha_actualizacion`) VALUES
-(1, 1, 1, 19, NULL, 1, NULL, '2026-07-16 02:46:59'),
-(2, 10, 1, 1, NULL, 3, 3, '2026-07-16 04:50:02'),
-(3, 11, 1, 3, 2, 2, 3, '2026-07-16 04:43:16'),
-(4, 1, 2, 19, NULL, 1, NULL, '2026-07-17 08:31:57'),
-(5, 2, 2, 19, NULL, 1, NULL, '2026-07-17 08:35:21'),
-(6, 10, 2, 5, NULL, 2, NULL, '2026-07-17 08:30:29'),
-(7, 11, 2, 3, 4, 2, 3, '2026-07-17 09:26:17'),
-(8, 12, 2, 1, NULL, 1, NULL, '2026-07-15 16:02:02'),
-(9, 1, 3, 19, NULL, 1, NULL, '2026-07-18 01:58:05'),
-(10, 2, 3, 19, NULL, 1, NULL, '2026-07-18 04:16:16');
+INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, `jornadas`, `grupos`, `sets_fase`, `sets_final`, `fecha_actualizacion`, `segunda_de_id`) VALUES
+(1, 1, 1, 19, NULL, 1, NULL, '2026-07-16 02:46:59', NULL),
+(2, 10, 1, 1, NULL, 3, 3, '2026-07-16 04:50:02', NULL),
+(3, 11, 1, 3, 2, 2, 3, '2026-07-16 04:43:16', NULL),
+(4, 1, 2, 19, NULL, 1, NULL, '2026-07-17 08:31:57', NULL),
+(5, 2, 2, 19, NULL, 1, NULL, '2026-07-17 08:35:21', NULL),
+(6, 10, 2, 5, NULL, 2, NULL, '2026-07-17 08:30:29', NULL),
+(7, 11, 2, 3, 4, 2, 3, '2026-07-17 09:26:17', NULL),
+(8, 12, 2, 1, NULL, 1, NULL, '2026-07-15 16:02:02', NULL),
+(9, 1, 3, 19, NULL, 1, NULL, '2026-07-18 01:58:05', NULL),
+(10, 2, 3, 19, NULL, 1, NULL, '2026-08-26 12:24:22', NULL),
+(11, 13, 3, NULL, NULL, 1, 1, NULL, 9),
+(12, 14, 3, NULL, NULL, 1, 1, NULL, 10),
+(13, 13, 1, NULL, NULL, 1, 1, NULL, 1),
+(14, 13, 2, NULL, NULL, 1, 1, NULL, 4),
+(15, 14, 2, NULL, NULL, 1, 1, NULL, 5),
+(16, 15, 3, NULL, NULL, 3, 3, NULL, 11),
+(17, 16, 3, NULL, NULL, 3, 3, NULL, 12),
+(18, 15, 1, NULL, NULL, 3, 3, NULL, 13),
+(19, 15, 2, NULL, NULL, 3, 3, NULL, 14),
+(20, 16, 2, NULL, NULL, 3, 3, NULL, 15);
 
 -- --------------------------------------------------------
 
@@ -117,7 +129,6 @@ INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, 
 -- Estructura de tabla para la tabla `mundial_ediciones`
 --
 
-DROP TABLE IF EXISTS `mundial_ediciones`;
 CREATE TABLE `mundial_ediciones` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
@@ -137,7 +148,6 @@ INSERT INTO `mundial_ediciones` (`id`, `competicion_temporada_id`, `region_campe
 -- Estructura de tabla para la tabla `mundial_participantes`
 --
 
-DROP TABLE IF EXISTS `mundial_participantes`;
 CREATE TABLE `mundial_participantes` (
   `id` int(11) NOT NULL,
   `mundial_id` int(11) NOT NULL,
@@ -169,7 +179,6 @@ INSERT INTO `mundial_participantes` (`id`, `mundial_id`, `region_id`, `pokemon_i
 -- Estructura de tabla para la tabla `mundial_regiones`
 --
 
-DROP TABLE IF EXISTS `mundial_regiones`;
 CREATE TABLE `mundial_regiones` (
   `id` int(11) NOT NULL,
   `nombre` varchar(50) NOT NULL,
@@ -197,7 +206,6 @@ INSERT INTO `mundial_regiones` (`id`, `nombre`, `imagen`) VALUES
 -- Estructura de tabla para la tabla `mundial_resultados`
 --
 
-DROP TABLE IF EXISTS `mundial_resultados`;
 CREATE TABLE `mundial_resultados` (
   `id` int(11) NOT NULL,
   `mundial_id` int(11) NOT NULL,
@@ -220,7 +228,6 @@ INSERT INTO `mundial_resultados` (`id`, `mundial_id`, `region_local_id`, `region
 -- Estructura de tabla para la tabla `participantes`
 --
 
-DROP TABLE IF EXISTS `participantes`;
 CREATE TABLE `participantes` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
@@ -369,7 +376,497 @@ INSERT INTO `participantes` (`id`, `competicion_temporada_id`, `pokemon_id`, `gr
 (134, 10, 244, NULL),
 (135, 10, 245, NULL),
 (136, 10, 248, NULL),
-(137, 10, 251, NULL);
+(137, 10, 251, NULL),
+(138, 13, 1, NULL),
+(139, 13, 2, NULL),
+(140, 13, 4, NULL),
+(141, 13, 5, NULL),
+(142, 13, 6, NULL),
+(143, 13, 7, NULL),
+(144, 13, 8, NULL),
+(145, 13, 9, NULL),
+(146, 13, 10, NULL),
+(147, 13, 11, NULL),
+(148, 13, 12, NULL),
+(149, 13, 13, NULL),
+(150, 13, 14, NULL),
+(151, 13, 15, NULL),
+(152, 13, 16, NULL),
+(153, 13, 17, NULL),
+(154, 13, 18, NULL),
+(155, 13, 19, NULL),
+(156, 13, 20, NULL),
+(157, 13, 21, NULL),
+(158, 13, 22, NULL),
+(159, 13, 23, NULL),
+(160, 13, 24, NULL),
+(161, 13, 25, NULL),
+(162, 13, 26, NULL),
+(163, 13, 27, NULL),
+(164, 13, 28, NULL),
+(165, 13, 29, NULL),
+(166, 13, 30, NULL),
+(167, 13, 31, NULL),
+(168, 13, 32, NULL),
+(169, 13, 33, NULL),
+(170, 13, 34, NULL),
+(171, 13, 35, NULL),
+(172, 13, 36, NULL),
+(173, 13, 37, NULL),
+(174, 13, 39, NULL),
+(175, 13, 40, NULL),
+(176, 13, 41, NULL),
+(177, 13, 42, NULL),
+(178, 13, 43, NULL),
+(179, 13, 44, NULL),
+(180, 13, 45, NULL),
+(181, 13, 46, NULL),
+(182, 13, 47, NULL),
+(183, 13, 48, NULL),
+(184, 13, 49, NULL),
+(185, 13, 50, NULL),
+(186, 13, 51, NULL),
+(187, 13, 52, NULL),
+(188, 13, 53, NULL),
+(189, 13, 54, NULL),
+(190, 13, 55, NULL),
+(191, 13, 56, NULL),
+(192, 13, 57, NULL),
+(193, 13, 58, NULL),
+(194, 13, 60, NULL),
+(195, 13, 61, NULL),
+(196, 13, 62, NULL),
+(197, 13, 63, NULL),
+(198, 13, 64, NULL),
+(199, 13, 66, NULL),
+(200, 13, 67, NULL),
+(201, 13, 68, NULL),
+(202, 13, 69, NULL),
+(203, 13, 70, NULL),
+(204, 13, 71, NULL),
+(205, 13, 72, NULL),
+(206, 13, 74, NULL),
+(207, 13, 75, NULL),
+(208, 13, 76, NULL),
+(209, 13, 77, NULL),
+(210, 13, 78, NULL),
+(211, 13, 79, NULL),
+(212, 13, 80, NULL),
+(213, 13, 81, NULL),
+(214, 13, 82, NULL),
+(215, 13, 83, NULL),
+(216, 13, 84, NULL),
+(217, 13, 85, NULL),
+(218, 13, 86, NULL),
+(219, 13, 87, NULL),
+(220, 13, 88, NULL),
+(221, 13, 89, NULL),
+(222, 13, 90, NULL),
+(223, 13, 92, NULL),
+(224, 13, 93, NULL),
+(225, 13, 95, NULL),
+(226, 13, 96, NULL),
+(227, 13, 98, NULL),
+(228, 13, 99, NULL),
+(229, 13, 100, NULL),
+(230, 13, 101, NULL),
+(231, 13, 102, NULL),
+(232, 13, 104, NULL),
+(233, 13, 105, NULL),
+(234, 13, 106, NULL),
+(235, 13, 107, NULL),
+(236, 13, 108, NULL),
+(237, 13, 109, NULL),
+(238, 13, 110, NULL),
+(239, 13, 111, NULL),
+(240, 13, 112, NULL),
+(241, 13, 113, NULL),
+(242, 13, 114, NULL),
+(243, 13, 115, NULL),
+(244, 13, 116, NULL),
+(245, 13, 117, NULL),
+(246, 13, 118, NULL),
+(247, 13, 119, NULL),
+(248, 13, 120, NULL),
+(249, 13, 122, NULL),
+(250, 13, 123, NULL),
+(251, 13, 124, NULL),
+(252, 13, 125, NULL),
+(253, 13, 126, NULL),
+(254, 13, 127, NULL),
+(255, 13, 128, NULL),
+(256, 13, 129, NULL),
+(257, 13, 132, NULL),
+(258, 13, 133, NULL),
+(259, 13, 137, NULL),
+(260, 13, 138, NULL),
+(261, 13, 140, NULL),
+(262, 13, 141, NULL),
+(263, 13, 142, NULL),
+(264, 13, 143, NULL),
+(265, 13, 147, NULL),
+(266, 13, 148, NULL),
+(393, 18, 40, NULL),
+(394, 18, 78, NULL),
+(395, 18, 91, NULL),
+(396, 18, 130, NULL),
+(397, 18, 134, NULL),
+(398, 18, 143, NULL),
+(400, 14, 1, NULL),
+(401, 14, 2, NULL),
+(402, 14, 4, NULL),
+(403, 14, 5, NULL),
+(404, 14, 6, NULL),
+(405, 14, 7, NULL),
+(406, 14, 8, NULL),
+(407, 14, 9, NULL),
+(408, 14, 10, NULL),
+(409, 14, 11, NULL),
+(410, 14, 12, NULL),
+(411, 14, 13, NULL),
+(412, 14, 14, NULL),
+(413, 14, 15, NULL),
+(414, 14, 16, NULL),
+(415, 14, 17, NULL),
+(416, 14, 18, NULL),
+(417, 14, 19, NULL),
+(418, 14, 20, NULL),
+(419, 14, 21, NULL),
+(420, 14, 22, NULL),
+(421, 14, 23, NULL),
+(422, 14, 24, NULL),
+(423, 14, 25, NULL),
+(424, 14, 26, NULL),
+(425, 14, 27, NULL),
+(426, 14, 28, NULL),
+(427, 14, 29, NULL),
+(428, 14, 30, NULL),
+(429, 14, 31, NULL),
+(430, 14, 32, NULL),
+(431, 14, 33, NULL),
+(432, 14, 34, NULL),
+(433, 14, 35, NULL),
+(434, 14, 36, NULL),
+(435, 14, 37, NULL),
+(436, 14, 39, NULL),
+(437, 14, 40, NULL),
+(438, 14, 41, NULL),
+(439, 14, 42, NULL),
+(440, 14, 43, NULL),
+(441, 14, 44, NULL),
+(442, 14, 45, NULL),
+(443, 14, 46, NULL),
+(444, 14, 47, NULL),
+(445, 14, 48, NULL),
+(446, 14, 49, NULL),
+(447, 14, 50, NULL),
+(448, 14, 51, NULL),
+(449, 14, 52, NULL),
+(450, 14, 53, NULL),
+(451, 14, 54, NULL),
+(452, 14, 55, NULL),
+(453, 14, 56, NULL),
+(454, 14, 57, NULL),
+(455, 14, 58, NULL),
+(456, 14, 60, NULL),
+(457, 14, 61, NULL),
+(458, 14, 62, NULL),
+(459, 14, 63, NULL),
+(460, 14, 64, NULL),
+(461, 14, 66, NULL),
+(462, 14, 67, NULL),
+(463, 14, 68, NULL),
+(464, 14, 69, NULL),
+(465, 14, 70, NULL),
+(466, 14, 71, NULL),
+(467, 14, 72, NULL),
+(468, 14, 74, NULL),
+(469, 14, 75, NULL),
+(470, 14, 76, NULL),
+(471, 14, 77, NULL),
+(472, 14, 78, NULL),
+(473, 14, 79, NULL),
+(474, 14, 80, NULL),
+(475, 14, 81, NULL),
+(476, 14, 82, NULL),
+(477, 14, 83, NULL),
+(478, 14, 84, NULL),
+(479, 14, 85, NULL),
+(480, 14, 86, NULL),
+(481, 14, 87, NULL),
+(482, 14, 88, NULL),
+(483, 14, 89, NULL),
+(484, 14, 90, NULL),
+(485, 14, 91, NULL),
+(486, 14, 92, NULL),
+(487, 14, 93, NULL),
+(488, 14, 95, NULL),
+(489, 14, 96, NULL),
+(490, 14, 98, NULL),
+(491, 14, 99, NULL),
+(492, 14, 100, NULL),
+(493, 14, 101, NULL),
+(494, 14, 102, NULL),
+(495, 14, 104, NULL),
+(496, 14, 105, NULL),
+(497, 14, 106, NULL),
+(498, 14, 107, NULL),
+(499, 14, 108, NULL),
+(500, 14, 109, NULL),
+(501, 14, 110, NULL),
+(502, 14, 111, NULL),
+(503, 14, 112, NULL),
+(504, 14, 113, NULL),
+(505, 14, 114, NULL),
+(506, 14, 115, NULL),
+(507, 14, 116, NULL),
+(508, 14, 117, NULL),
+(509, 14, 118, NULL),
+(510, 14, 119, NULL),
+(511, 14, 120, NULL),
+(512, 14, 122, NULL),
+(513, 14, 123, NULL),
+(514, 14, 125, NULL),
+(515, 14, 126, NULL),
+(516, 14, 127, NULL),
+(517, 14, 128, NULL),
+(518, 14, 129, NULL),
+(519, 14, 132, NULL),
+(520, 14, 133, NULL),
+(521, 14, 136, NULL),
+(522, 14, 137, NULL),
+(523, 14, 138, NULL),
+(524, 14, 140, NULL),
+(525, 14, 141, NULL),
+(526, 14, 142, NULL),
+(527, 14, 147, NULL),
+(528, 14, 148, NULL),
+(655, 19, 38, NULL),
+(656, 19, 71, NULL),
+(657, 19, 73, NULL),
+(658, 19, 125, NULL),
+(659, 19, 128, NULL),
+(660, 19, 139, NULL),
+(662, 15, 152, NULL),
+(663, 15, 153, NULL),
+(664, 15, 155, NULL),
+(665, 15, 156, NULL),
+(666, 15, 158, NULL),
+(667, 15, 159, NULL),
+(668, 15, 161, NULL),
+(669, 15, 162, NULL),
+(670, 15, 163, NULL),
+(671, 15, 164, NULL),
+(672, 15, 165, NULL),
+(673, 15, 166, NULL),
+(674, 15, 167, NULL),
+(675, 15, 168, NULL),
+(676, 15, 170, NULL),
+(677, 15, 171, NULL),
+(678, 15, 172, NULL),
+(679, 15, 173, NULL),
+(680, 15, 174, NULL),
+(681, 15, 175, NULL),
+(682, 15, 176, NULL),
+(683, 15, 177, NULL),
+(684, 15, 178, NULL),
+(685, 15, 179, NULL),
+(686, 15, 180, NULL),
+(687, 15, 182, NULL),
+(688, 15, 183, NULL),
+(689, 15, 184, NULL),
+(690, 15, 185, NULL),
+(691, 15, 187, NULL),
+(692, 15, 188, NULL),
+(693, 15, 189, NULL),
+(694, 15, 190, NULL),
+(695, 15, 191, NULL),
+(696, 15, 192, NULL),
+(697, 15, 193, NULL),
+(698, 15, 194, NULL),
+(699, 15, 195, NULL),
+(700, 15, 198, NULL),
+(701, 15, 199, NULL),
+(702, 15, 200, NULL),
+(703, 15, 201, NULL),
+(704, 15, 202, NULL),
+(705, 15, 203, NULL),
+(706, 15, 204, NULL),
+(707, 15, 205, NULL),
+(708, 15, 206, NULL),
+(709, 15, 207, NULL),
+(710, 15, 209, NULL),
+(711, 15, 210, NULL),
+(712, 15, 211, NULL),
+(713, 15, 214, NULL),
+(714, 15, 215, NULL),
+(715, 15, 216, NULL),
+(716, 15, 217, NULL),
+(717, 15, 218, NULL),
+(718, 15, 219, NULL),
+(719, 15, 220, NULL),
+(720, 15, 221, NULL),
+(721, 15, 222, NULL),
+(722, 15, 223, NULL),
+(723, 15, 224, NULL),
+(724, 15, 225, NULL),
+(725, 15, 226, NULL),
+(726, 15, 227, NULL),
+(727, 15, 228, NULL),
+(728, 15, 231, NULL),
+(729, 15, 234, NULL),
+(730, 15, 235, NULL),
+(731, 15, 236, NULL),
+(732, 15, 237, NULL),
+(733, 15, 238, NULL),
+(734, 15, 239, NULL),
+(735, 15, 240, NULL),
+(736, 15, 241, NULL),
+(737, 15, 246, NULL),
+(738, 15, 247, NULL),
+(789, 20, 164, NULL),
+(790, 20, 169, NULL),
+(791, 20, 200, NULL),
+(792, 20, 202, NULL),
+(793, 20, 213, NULL),
+(794, 20, 229, NULL),
+(795, 20, 233, NULL),
+(796, 20, 251, NULL),
+(804, 11, 1, NULL),
+(805, 11, 2, NULL),
+(806, 11, 4, NULL),
+(807, 11, 5, NULL),
+(808, 11, 6, NULL),
+(809, 11, 7, NULL),
+(810, 11, 8, NULL),
+(811, 11, 9, NULL),
+(812, 11, 10, NULL),
+(813, 11, 11, NULL),
+(814, 11, 12, NULL),
+(815, 11, 13, NULL),
+(816, 11, 14, NULL),
+(817, 11, 15, NULL),
+(818, 11, 16, NULL),
+(819, 11, 17, NULL),
+(820, 11, 18, NULL),
+(821, 11, 19, NULL),
+(822, 11, 20, NULL),
+(823, 11, 21, NULL),
+(824, 11, 22, NULL),
+(825, 11, 23, NULL),
+(826, 11, 24, NULL),
+(827, 11, 25, NULL),
+(828, 11, 26, NULL),
+(829, 11, 27, NULL),
+(830, 11, 28, NULL),
+(831, 11, 29, NULL),
+(832, 11, 30, NULL),
+(833, 11, 31, NULL),
+(834, 11, 32, NULL),
+(835, 11, 33, NULL),
+(836, 11, 34, NULL),
+(837, 11, 35, NULL),
+(838, 11, 36, NULL),
+(839, 11, 37, NULL),
+(840, 11, 38, NULL),
+(841, 11, 39, NULL),
+(842, 11, 40, NULL),
+(843, 11, 41, NULL),
+(844, 11, 42, NULL),
+(845, 11, 43, NULL),
+(846, 11, 44, NULL),
+(847, 11, 45, NULL),
+(848, 11, 46, NULL),
+(849, 11, 47, NULL),
+(850, 11, 48, NULL),
+(851, 11, 49, NULL),
+(852, 11, 50, NULL),
+(853, 11, 51, NULL),
+(854, 11, 52, NULL),
+(855, 11, 53, NULL),
+(856, 11, 54, NULL),
+(857, 11, 55, NULL),
+(858, 11, 56, NULL),
+(859, 11, 57, NULL),
+(860, 11, 58, NULL),
+(861, 11, 60, NULL),
+(862, 11, 61, NULL),
+(863, 11, 62, NULL),
+(864, 11, 63, NULL),
+(865, 11, 64, NULL),
+(866, 11, 66, NULL),
+(867, 11, 67, NULL),
+(868, 11, 68, NULL),
+(869, 11, 69, NULL),
+(870, 11, 70, NULL),
+(871, 11, 71, NULL),
+(872, 11, 72, NULL),
+(873, 11, 74, NULL),
+(874, 11, 75, NULL),
+(875, 11, 76, NULL),
+(876, 11, 77, NULL),
+(877, 11, 78, NULL),
+(878, 11, 79, NULL),
+(879, 11, 80, NULL),
+(880, 11, 81, NULL),
+(881, 11, 82, NULL),
+(882, 11, 83, NULL),
+(883, 11, 84, NULL),
+(884, 11, 85, NULL),
+(885, 11, 86, NULL),
+(886, 11, 87, NULL),
+(887, 11, 88, NULL),
+(888, 11, 89, NULL),
+(889, 11, 90, NULL),
+(890, 11, 91, NULL),
+(891, 11, 92, NULL),
+(892, 11, 93, NULL),
+(893, 11, 95, NULL),
+(894, 11, 96, NULL),
+(895, 11, 98, NULL),
+(896, 11, 99, NULL),
+(897, 11, 100, NULL),
+(898, 11, 101, NULL),
+(899, 11, 102, NULL),
+(900, 11, 104, NULL),
+(901, 11, 105, NULL),
+(902, 11, 106, NULL),
+(903, 11, 107, NULL),
+(904, 11, 108, NULL),
+(905, 11, 109, NULL),
+(906, 11, 110, NULL),
+(907, 11, 111, NULL),
+(908, 11, 112, NULL),
+(909, 11, 113, NULL),
+(910, 11, 115, NULL),
+(911, 11, 116, NULL),
+(912, 11, 117, NULL),
+(913, 11, 118, NULL),
+(914, 11, 119, NULL),
+(915, 11, 120, NULL),
+(916, 11, 122, NULL),
+(917, 11, 123, NULL),
+(918, 11, 125, NULL),
+(919, 11, 126, NULL),
+(920, 11, 127, NULL),
+(921, 11, 129, NULL),
+(922, 11, 130, NULL),
+(923, 11, 132, NULL),
+(924, 11, 133, NULL),
+(925, 11, 136, NULL),
+(926, 11, 137, NULL),
+(927, 11, 138, NULL),
+(928, 11, 140, NULL),
+(929, 11, 141, NULL),
+(930, 11, 142, NULL),
+(931, 11, 147, NULL),
+(932, 11, 148, NULL),
+(1059, 16, 18, NULL),
+(1060, 16, 73, NULL),
+(1061, 16, 117, NULL),
+(1062, 16, 130, NULL),
+(1063, 16, 139, NULL),
+(1064, 16, 146, NULL);
 
 -- --------------------------------------------------------
 
@@ -377,7 +874,6 @@ INSERT INTO `participantes` (`id`, `competicion_temporada_id`, `pokemon_id`, `gr
 -- Estructura de tabla para la tabla `partidos`
 --
 
-DROP TABLE IF EXISTS `partidos`;
 CREATE TABLE `partidos` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
@@ -1235,7 +1731,43 @@ INSERT INTO `partidos` (`id`, `competicion_temporada_id`, `fase`, `jornada`, `lo
 (849, 10, 'L', 5, 127, 125),
 (850, 10, 'L', 5, 120, 128),
 (851, 10, 'L', 5, 130, 118),
-(852, 10, 'L', 5, 131, 126);
+(852, 10, 'L', 5, 131, 126),
+(853, 10, 'L', 6, 133, 121),
+(854, 10, 'L', 6, 137, 118),
+(855, 10, 'L', 6, 134, 125),
+(856, 10, 'L', 6, 126, 136),
+(857, 10, 'L', 6, 123, 129),
+(858, 10, 'L', 6, 128, 124),
+(859, 10, 'L', 6, 122, 127),
+(860, 10, 'L', 6, 120, 132),
+(861, 10, 'L', 6, 135, 130),
+(862, 10, 'L', 6, 119, 131),
+(863, 10, 'L', 7, 125, 118),
+(864, 10, 'L', 7, 136, 119),
+(865, 10, 'L', 7, 121, 126),
+(866, 10, 'L', 7, 122, 133),
+(867, 10, 'L', 7, 127, 134),
+(868, 10, 'L', 7, 124, 132),
+(869, 10, 'L', 7, 137, 135),
+(870, 10, 'L', 7, 130, 123),
+(871, 10, 'L', 7, 129, 120),
+(872, 10, 'L', 7, 131, 128),
+(873, 10, 'L', 8, 119, 121),
+(874, 10, 'L', 8, 124, 129),
+(875, 10, 'L', 8, 126, 122),
+(876, 10, 'L', 8, 118, 134),
+(877, 10, 'L', 8, 123, 137),
+(878, 10, 'L', 8, 133, 127),
+(879, 10, 'L', 8, 135, 125),
+(880, 10, 'L', 8, 128, 136),
+(881, 10, 'L', 8, 132, 131),
+(882, 10, 'L', 8, 120, 130),
+(883, 10, 'L', 9, 133, 126),
+(884, 10, 'L', 9, 122, 119),
+(885, 10, 'L', 9, 125, 123),
+(886, 10, 'L', 9, 134, 135),
+(887, 10, 'L', 9, 132, 136),
+(888, 10, 'L', 9, 130, 124);
 
 -- --------------------------------------------------------
 
@@ -1243,7 +1775,6 @@ INSERT INTO `partidos` (`id`, `competicion_temporada_id`, `fase`, `jornada`, `lo
 -- Estructura de tabla para la tabla `plazas_especiales`
 --
 
-DROP TABLE IF EXISTS `plazas_especiales`;
 CREATE TABLE `plazas_especiales` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
@@ -1266,7 +1797,6 @@ INSERT INTO `plazas_especiales` (`id`, `competicion_temporada_id`, `participante
 -- Estructura de tabla para la tabla `pokemon`
 --
 
-DROP TABLE IF EXISTS `pokemon`;
 CREATE TABLE `pokemon` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
@@ -1675,7 +2205,6 @@ INSERT INTO `pokemon` (`id`, `nombre`, `generacion`, `tipo_primario`, `tipo_secu
 -- Estructura de tabla para la tabla `sets`
 --
 
-DROP TABLE IF EXISTS `sets`;
 CREATE TABLE `sets` (
   `id` int(11) NOT NULL,
   `partido_id` int(11) NOT NULL,
@@ -2567,7 +3096,43 @@ INSERT INTO `sets` (`id`, `partido_id`, `numero_set`, `vida_local`, `vida_visita
 (885, 849, 1, 19, 0),
 (886, 850, 1, 100, 0),
 (887, 851, 1, 100, 0),
-(888, 852, 1, 68, 0);
+(888, 852, 1, 68, 0),
+(889, 853, 1, 29, 0),
+(890, 854, 1, 74, 0),
+(891, 855, 1, 100, 0),
+(892, 856, 1, 4, 0),
+(893, 857, 1, 28, 0),
+(894, 858, 1, 100, 0),
+(895, 859, 1, 0, 1),
+(896, 860, 1, 100, 0),
+(897, 861, 1, 27, 0),
+(898, 862, 1, 0, 22),
+(899, 863, 1, 16, 0),
+(900, 864, 1, 23, 0),
+(901, 865, 1, 0, 35),
+(902, 866, 1, 0, 100),
+(903, 867, 1, 0, 39),
+(904, 868, 1, 34, 0),
+(905, 869, 1, 0, 8),
+(906, 870, 1, 0, 100),
+(907, 871, 1, 0, 100),
+(908, 872, 1, 0, 100),
+(909, 873, 1, 49, 0),
+(910, 874, 1, 0, 38),
+(911, 875, 1, 0, 100),
+(912, 876, 1, 2, 0),
+(913, 877, 1, 0, 99),
+(914, 878, 1, 0, 37),
+(915, 879, 1, 0, 66),
+(916, 880, 1, 100, 0),
+(917, 881, 1, 71, 0),
+(918, 882, 1, 0, 42),
+(919, 883, 1, 0, 39),
+(920, 884, 1, 17, 0),
+(921, 885, 1, 0, 100),
+(922, 886, 1, 0, 67),
+(923, 887, 1, 0, 100),
+(924, 888, 1, 0, 100);
 
 -- --------------------------------------------------------
 
@@ -2575,7 +3140,6 @@ INSERT INTO `sets` (`id`, `partido_id`, `numero_set`, `vida_local`, `vida_visita
 -- Estructura de tabla para la tabla `temporadas`
 --
 
-DROP TABLE IF EXISTS `temporadas`;
 CREATE TABLE `temporadas` (
   `id` int(11) NOT NULL,
   `numero` int(11) NOT NULL,
@@ -2597,7 +3161,6 @@ INSERT INTO `temporadas` (`id`, `numero`, `estado`) VALUES
 -- Estructura de tabla para la tabla `zonas_clasificacion`
 --
 
-DROP TABLE IF EXISTS `zonas_clasificacion`;
 CREATE TABLE `zonas_clasificacion` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
@@ -2632,7 +3195,7 @@ INSERT INTO `zonas_clasificacion` (`id`, `competicion_temporada_id`, `nombre`, `
 (18, 9, 'Promoción descenso', 17, 19, 'naranja'),
 (19, 9, 'Descenso', 20, 20, 'rojo'),
 (20, 10, 'Campeón', 1, 1, 'amarillo'),
-(21, 10, 'Champions', 1, 4, 'azul'),
+(21, 10, 'Champions', 1, 5, 'azul'),
 (22, 10, 'Mundial', 1, 6, 'verde'),
 (23, 10, 'Promoción descenso', 17, 19, 'naranja'),
 (24, 10, 'Descenso', 20, 20, 'rojo'),
@@ -2665,7 +3228,8 @@ ALTER TABLE `competiciones_temporadas`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_competicion_temporada` (`competicion_id`,`temporada_id`),
   ADD UNIQUE KEY `unica_temporada` (`competicion_id`,`temporada_id`),
-  ADD KEY `temporada_id` (`temporada_id`);
+  ADD KEY `temporada_id` (`temporada_id`),
+  ADD KEY `fk_segunda_de` (`segunda_de_id`);
 
 --
 -- Indices de la tabla `mundial_ediciones`
@@ -2764,13 +3328,13 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT de la tabla `competiciones`
 --
 ALTER TABLE `competiciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `competiciones_temporadas`
 --
 ALTER TABLE `competiciones_temporadas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `mundial_ediciones`
@@ -2800,13 +3364,13 @@ ALTER TABLE `mundial_resultados`
 -- AUTO_INCREMENT de la tabla `participantes`
 --
 ALTER TABLE `participantes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1066;
 
 --
 -- AUTO_INCREMENT de la tabla `partidos`
 --
 ALTER TABLE `partidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=853;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=889;
 
 --
 -- AUTO_INCREMENT de la tabla `plazas_especiales`
@@ -2824,7 +3388,7 @@ ALTER TABLE `pokemon`
 -- AUTO_INCREMENT de la tabla `sets`
 --
 ALTER TABLE `sets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=889;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=925;
 
 --
 -- AUTO_INCREMENT de la tabla `temporadas`
@@ -2847,7 +3411,8 @@ ALTER TABLE `zonas_clasificacion`
 --
 ALTER TABLE `competiciones_temporadas`
   ADD CONSTRAINT `competiciones_temporadas_ibfk_1` FOREIGN KEY (`competicion_id`) REFERENCES `competiciones` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `competiciones_temporadas_ibfk_2` FOREIGN KEY (`temporada_id`) REFERENCES `temporadas` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `competiciones_temporadas_ibfk_2` FOREIGN KEY (`temporada_id`) REFERENCES `temporadas` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_segunda_de` FOREIGN KEY (`segunda_de_id`) REFERENCES `competiciones_temporadas` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `mundial_ediciones`

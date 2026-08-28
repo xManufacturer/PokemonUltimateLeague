@@ -1,5 +1,6 @@
 <?php
 require_once '../config/conexion.php';
+require_once '../includes/clasificacion.php';
 $competicion = 1;
 
 $sql = "SELECT
@@ -14,6 +15,11 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $competicion);
 $stmt->execute();
 $resultado = $stmt->get_result();
+
+$historica = obtenerClasificacionHistorica($conn, "Kanto");
+
+$clasificacionHistoricaPrimera = $historica["primera"];
+$clasificacionHistoricaSegunda = $historica["segunda"];
 ?>
 
 <!DOCTYPE html>
@@ -49,5 +55,180 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
         <?php } ?>
     </div>
+<br><br><br><br>
+
+    <h1>Clasificación histórica</h1>
+
+<div class="clasificacion-contenedor">
+
+    <div class="clasificacion-columna">
+
+        <table>
+
+            <tr>
+                <th>Pos</th>
+                <th>Pokémon</th>
+                <th>Temp</th>
+                <th>Com</th>
+                <th>V</th>
+                <th>E</th>
+                <th>D</th>
+                <th>% V</th>
+                <th>PS+</th>
+                <th>PS-</th>
+                <th>Dif</th>
+                <th>Pts</th>
+            </tr>
+
+            <?php
+
+            // ==================================================
+            // PRIMERA DIVISIÓN
+            // ==================================================
+
+            $posicion = 1;
+
+            foreach ($clasificacionHistoricaPrimera as $fila) {
+
+            ?>
+
+            <tr>
+
+                <td>
+                    <strong><?php echo $posicion; ?></strong>
+                </td>
+
+                <td>
+                    <div class="pokemon-clasificacion">
+
+                        <img src="../img/pokemon/<?php echo $fila["imagen"]; ?>">
+
+                        <span>
+                            <?php echo $fila["nombre"]; ?>
+                        </span>
+
+                    </div>
+                </td>
+
+                <td><?php echo $fila["temporadas"]; ?></td>
+                <td><?php echo $fila["com"]; ?></td>
+                <td><?php echo $fila["v"]; ?></td>
+                <td><?php echo $fila["e"]; ?></td>
+                <td><?php echo $fila["d"]; ?></td>
+
+                <td>
+                    <?php
+                    echo number_format(
+                        $fila["porcentaje_victorias"],
+                        1,
+                        ",",
+                        "."
+                    );
+                    ?>%
+                </td>
+
+                <td><?php echo $fila["ps_favor"]; ?></td>
+                <td><?php echo $fila["ps_contra"]; ?></td>
+
+                <td>
+                    <strong><?php echo $fila["diferencia"]; ?></strong>
+                </td>
+
+                <td>
+                    <strong><?php echo $fila["puntos"]; ?></strong>
+                </td>
+
+            </tr>
+
+            <?php
+
+                $posicion++;
+
+            }
+
+
+            // ==================================================
+            // SEGUNDA DIVISIÓN
+            // ==================================================
+
+            foreach ($clasificacionHistoricaSegunda as $fila) {
+
+            ?>
+
+            <tr class="historica-segunda">
+
+                <td>
+                    <strong><?php echo $posicion; ?></strong>
+                </td>
+
+                <td>
+                    <div class="pokemon-clasificacion">
+
+                        <img src="../img/pokemon/<?php echo $fila["imagen"]; ?>">
+
+                        <span>
+                            <?php echo $fila["nombre"]; ?>
+                        </span>
+
+                    </div>
+                </td>
+
+                <td><?php echo $fila["temporadas"]; ?></td>
+                <td><?php echo $fila["com"]; ?></td>
+                <td><?php echo $fila["v"]; ?></td>
+                <td><?php echo $fila["e"]; ?></td>
+                <td><?php echo $fila["d"]; ?></td>
+
+                <td>
+                    <?php
+                    echo number_format(
+                        $fila["porcentaje_victorias"],
+                        1,
+                        ",",
+                        "."
+                    );
+                    ?>%
+                </td>
+
+                <td><?php echo $fila["ps_favor"]; ?></td>
+                <td><?php echo $fila["ps_contra"]; ?></td>
+
+                <td>
+                    <strong><?php echo $fila["diferencia"]; ?></strong>
+                </td>
+
+                <td>
+                    <strong><?php echo $fila["puntos"]; ?></strong>
+                </td>
+
+            </tr>
+
+            <?php
+
+                $posicion++;
+
+            }
+
+            ?>
+
+        </table>
+
+    </div>
+
+</div>
+
+<?php
+$sql = "SELECT MAX(ct.fecha_actualizacion) AS fecha_actualizacion
+        FROM competiciones_temporadas ct
+        JOIN competiciones c
+            ON ct.competicion_id = c.id
+        WHERE c.region = 'Kanto'";
+
+$resultadoFecha = $conn->query($sql);
+$filaActualizacion = $resultadoFecha->fetch_assoc();
+?>
+
+<?php include '../includes/footer.php'; ?>
+
 </body>
 </html>

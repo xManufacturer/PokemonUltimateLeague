@@ -24,7 +24,7 @@ $sql = "SELECT
             nombre,
             ruta
         FROM competiciones
-        WHERE activa = 1
+        WHERE visible = 1
         ORDER BY id";
 
 $stmt = $conn->prepare($sql);
@@ -104,26 +104,6 @@ if (count($marcadores) == 1) {
 
     $partidosInicio[] = $partido;
 }
-
-$sql = "SELECT
-            fecha_actualizacion
-        FROM competiciones_temporadas
-        WHERE id = ?";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $ultimaCompeticion["competicion_temporada_id"]);
-$stmt->execute();
-
-$fila = $stmt->get_result()->fetch_assoc();
-
-$fechaActualizacion = "";
-
-if (!empty($fila["fecha_actualizacion"])) {
-    $fecha = new DateTime($fila["fecha_actualizacion"], new DateTimeZone("UTC"));
-$fecha->setTimezone(new DateTimeZone("Europe/Madrid"));
-
-$fechaActualizacion = $fecha->format("d/m/Y");
-}
 ?>
 
 <!DOCTYPE html>
@@ -158,7 +138,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
         </div>
         
-        <h1>Pokémon Ultimate League<span class="badge-beta">BETA</span></h1>
+        <h1>Pokémon Ultimate League</h1>
     </header>
 
     <div class="admin-icon">
@@ -227,21 +207,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     <div class="futuras-adiciones">
-        <h3>Web en fase BETA. Aspectos que faltan y futuras adiciones:</h3>
+        <h3>Aspectos que faltan y futuras adiciones:</h3>
         <ul>
             <li>Adaptar la web a dispositivos móviles</li>
             <li>Mejora general de diseño de la web.</li>
-            <li>Segunda División de cada región.</li>
             <li>Fichas individuales de cada Pokémon.</li>
             <li>Historial de enfrentamientos entre dos Pokémon.</li>
-            <li>Clasificación histórica de las competiciones.</li>
             <li>Palmarés, historial y más estadísticas de las competiciones.</li>
         </ul>
     </div>
+    
+<?php include 'includes/footer.php'; ?>
 
-    <footer class="pie-pagina">
-        <p><strong>Última actualización de resultados: </strong><?php echo $fechaActualizacion; ?></p>
-        <p>Creado por <a href="https://discord.com/users/380751682356641793" target="_blank">Manufacturer</a></p>
-    </footer>
 </body>
 </html>

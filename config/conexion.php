@@ -1,9 +1,9 @@
 <?php
 
-$host = "sql303.infinityfree.com";
-$usuario = "if0_42341239";
+$host = "localhost";
+$usuario = "root";
 $password = "";
-$bd = "if0_42341239_pokemonultimateleague";
+$bd = "pokemon_ultimate_league";
 
 $conn = new mysqli($host, $usuario, $password, $bd);
 

@@ -66,16 +66,34 @@ $competiciones = $stmt->get_result();
         <br><br>
 
         <label for="local"><strong>Pokémon local</strong></label>
-        <select name="local" id="local">
-            <option value="">...</option>
-        </select>
-        <br><br>
+
+<input
+    type="text"
+    id="local_busqueda"
+    list="lista_local"
+    placeholder=""
+    autocomplete="off">
+
+<datalist id="lista_local"></datalist>
+
+<input type="hidden" name="local" id="local">
+
+<br><br>
 
         <label for="visitante"><strong>Pokémon visitante</strong></label>
-        <select name="visitante" id="visitante">
-            <option value="">...</option>
-        </select>
-        <br><br>
+
+<input
+    type="text"
+    id="visitante_busqueda"
+    list="lista_visitante"
+    placeholder=""
+    autocomplete="off">
+
+<datalist id="lista_visitante"></datalist>
+
+<input type="hidden" name="visitante" id="visitante">
+
+<br><br>
 
         <input
             type="hidden"
@@ -97,6 +115,10 @@ $competiciones = $stmt->get_result();
     const jornada = document.getElementById("jornada");
     const contenedorSets = document.getElementById("contenedorSets");
     const competicionTemporada = document.getElementById("competicion_temporada");
+    const localBusqueda = document.getElementById("local_busqueda");
+    const visitanteBusqueda = document.getElementById("visitante_busqueda");
+    const listaLocal = document.getElementById("lista_local");
+    const listaVisitante = document.getElementById("lista_visitante");
 
     let datosTemporadas = null;
     let datosTemporada = null;
@@ -138,14 +160,12 @@ $competiciones = $stmt->get_result();
                 </option>`;
         }
 
-        if (datosTemporada.tipo == "liga") {
+if (datosTemporada.tipo == "liga") {
 
     fase.innerHTML +=
         `<option value="L">Liga</option>`;
 
-}
-
-else if (datosTemporada.tipo == "legendary") {
+} else if (datosTemporada.tipo == "legendary") {
 
     if (datosTemporada.jornadas == 1) {
         fase.innerHTML +=
@@ -154,32 +174,71 @@ else if (datosTemporada.tipo == "legendary") {
         fase.innerHTML +=
             `<option value="L">Liga</option>`;
     }
+
 } else if (datosTemporada.tipo == "copa") {
 
     for (let i = 0; i < datosTemporada.grupos; i++) {
         const letra = String.fromCharCode(65 + i);
+
         fase.innerHTML +=
             `<option value="G${letra}">
                 Grupo ${letra}
             </option>`;
     }
+
     if (datosTemporada.grupos >= 4) {
         fase.innerHTML +=
             `<option value="SF">Semifinal</option>`;
     }
+
     fase.innerHTML +=
         `<option value="F">Final</option>`;
+
+} else if (datosTemporada.tipo == "segunda") {
+
+    fase.innerHTML +=
+        `<option value="RP">Ronda Previa</option>`;
+
+    fase.innerHTML +=
+        `<option value="R1">Ronda 1</option>`;
+
+    fase.innerHTML +=
+        `<option value="R2">Ronda 2</option>`;
+
+    fase.innerHTML +=
+        `<option value="R3">Ronda 3</option>`;
+
+    fase.innerHTML +=
+        `<option value="OCT">Octavos</option>`;
+
+    fase.innerHTML +=
+        `<option value="QF">Cuartos</option>`;
+
+    fase.innerHTML +=
+        `<option value="SF">Semifinales</option>`;
+
+    fase.innerHTML +=
+        `<option value="F">Final</option>`;
+
+} else if (datosTemporada.tipo == "promocion") {
+
+    fase.innerHTML +=
+        `<option value="F">Final</option>`;
+
 } else if (datosTemporada.tipo == "mundial") {
 
     fase.innerHTML +=
         `<option value="F">Final</option>`;
 }
 
-        local.innerHTML =
-            '<option value="">...</option>';
+        local.value = "";
+visitante.value = "";
 
-        visitante.innerHTML =
-            '<option value="">...</option>';
+localBusqueda.value = "";
+visitanteBusqueda.value = "";
+
+listaLocal.innerHTML = "";
+listaVisitante.innerHTML = "";
 
         if (idCompeticionTemporada === "") {
             return;
@@ -190,14 +249,6 @@ else if (datosTemporada.tipo == "legendary") {
 
     fase.addEventListener("change", function () {
         cargarParticipantes();
-        actualizarSets();
-    });
-
-    local.addEventListener("change", function () {
-        actualizarSets();
-    });
-
-    visitante.addEventListener("change", function () {
         actualizarSets();
     });
 
@@ -219,24 +270,18 @@ else if (datosTemporada.tipo == "legendary") {
     .then(response => response.json())
     .then(datos => {
 
-        local.innerHTML =
-            '<option value="">...</option>';
+        listaLocal.innerHTML = "";
+listaVisitante.innerHTML = "";
 
-        visitante.innerHTML =
-            '<option value="">...</option>';
+datos.forEach(function(fila) {
 
-        datos.forEach(function(fila) {
+    listaLocal.innerHTML +=
+        `<option value="${fila.nombre}" data-id="${fila.id}"></option>`;
 
-            local.innerHTML +=
-                `<option value="${fila.id}">
-                    ${fila.nombre}
-                </option>`;
+    listaVisitante.innerHTML +=
+        `<option value="${fila.nombre}" data-id="${fila.id}"></option>`;
 
-            visitante.innerHTML +=
-                `<option value="${fila.id}">
-                    ${fila.nombre}
-                </option>`;
-        });
+});
 
     });
 
@@ -257,11 +302,9 @@ else if (datosTemporada.tipo == "legendary") {
             cantidad = datosTemporada.sets_fase;
         }
 
-        const nombreLocal = 
-            local.options[local.selectedIndex].text;
+        const nombreLocal = localBusqueda.value;
 
-        const nombreVisitante = 
-            visitante.options[visitante.selectedIndex].text;
+        const nombreVisitante = visitanteBusqueda.value;
 
         const imagenLocal =
             "../img/pokemon/" + nombreLocal.toLowerCase() + ".png";
@@ -308,6 +351,45 @@ else if (datosTemporada.tipo == "legendary") {
             `;
         }
     }
+
+    localBusqueda.addEventListener("input", function () {
+
+    const nombre = this.value.trim().toLowerCase();
+
+    local.value = "";
+
+    for (const opcion of listaLocal.options) {
+
+        if (opcion.value.toLowerCase() === nombre) {
+
+            local.value = opcion.dataset.id;
+            break;
+
+        }
+    }
+
+    actualizarSets();
+});
+
+
+visitanteBusqueda.addEventListener("input", function () {
+
+    const nombre = this.value.trim().toLowerCase();
+
+    visitante.value = "";
+
+    for (const opcion of listaVisitante.options) {
+
+        if (opcion.value.toLowerCase() === nombre) {
+
+            visitante.value = opcion.dataset.id;
+            break;
+
+        }
+    }
+
+    actualizarSets();
+});
     </script>
 
 </body>
