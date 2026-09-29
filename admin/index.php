@@ -20,9 +20,8 @@ require_once 'proteger.php';
     </a>
     <a class="btn-registrar" href="../index.php">Volver</a>
     <div class="tarjetas">
-        <a href="registrar_combate.php">Registrar combate</a>
-        <a href="editar_combate.php">Editar combate</a>
-        <a href="eliminar_combate.php">Eliminar combate</a>
+        <a href="registrar_combate.php">Registrar Liga</a>
+        <a href="registrar_members.php">Registrar Members</a>
     </div><br><br>
     <a class="btn-registrar" href="logout.php" class="btn-logout">Cerrar sesión</a>
 </body>

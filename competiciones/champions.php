@@ -38,7 +38,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZL2J8ZT"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-    <h1>Champions League</h1>
+        <div>
+            <img src="../img/logos/champions_league.png" alt="Champions League" class="logos">
+        </div>
     <a href="../index.php" class="btn-inicio">
         <img src="../img/inicio.png" alt="Inicio">
     </a>

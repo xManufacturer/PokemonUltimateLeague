@@ -45,6 +45,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
     <h1>Liga Kanto</h1>
+        <div>
+            <img src="../img/logos/liga_kanto.png" alt="Liga Kanto" class="logos">
+        </div>
     <a href="../index.php" class="btn-inicio">
         <img src="../img/inicio.png" alt="Inicio">
     </a>
@@ -55,7 +58,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
         <?php } ?>
     </div>
-<br><br><br><br>
+<br><br><br>
 
     <h1>Clasificación histórica</h1>
 
@@ -226,6 +229,8 @@ $sql = "SELECT MAX(ct.fecha_actualizacion) AS fecha_actualizacion
 
 $resultadoFecha = $conn->query($sql);
 $filaActualizacion = $resultadoFecha->fetch_assoc();
+
+$fechaHistorica = $filaActualizacion["fecha_actualizacion"];
 ?>
 
 <?php include '../includes/footer.php'; ?>

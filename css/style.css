@@ -555,10 +555,15 @@ select,
 .contenedor-iconos-sociales {
     position: absolute;
     left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 20px; 
     display: flex;
     gap: 12px;
+    z-index: 10; 
+}
+
+.logos {
+    width: 500px;
+    height: auto;
 }
 
 .enlace-icono {
@@ -659,8 +664,12 @@ select,
     width: 1100px;
     border: 2px solid blue;
     border-radius: 12px;
-    padding: 20px;
+    padding: 10px;
     box-sizing: border-box;
+}
+
+.fase-promocion {
+    width: 600px;
 }
 
 .titulo-fase {
@@ -676,6 +685,11 @@ select,
     color: blue;
 }
 
+.partidos-fase > .partido:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+}
+
 .partidos-fase.un-solo-partido {
     display: flex;
     justify-content: center;
@@ -683,6 +697,13 @@ select,
 
 .partidos-fase.un-solo-partido .partido {
     width: 50%;
+}
+
+.partidos-fase.final-promocion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 .historica-segunda {
@@ -711,7 +732,262 @@ select,
     background-color: #fff5b1;
 }
 
+.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(n+3):nth-child(-n+7) td:not(:first-child) {
+    background-color: #dbeeff;
+}
+
 .clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(2) td:first-child {
     background-color: blue;
     color: lightblue;
+}
+
+/* =========================================
+   MEMBERS LEAGUE - REGISTRO DE COMBATE
+   ========================================= */
+
+.members-contenedor {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: 30px;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.members-jugador {
+    text-align: center;
+}
+
+.members-jugador h2 {
+    margin-bottom: 15px;
+}
+
+.pokemon-members {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pokemon-member {
+    display: grid;
+    grid-template-columns: 50px 1fr 60px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid #ccccccb4;
+    border-radius: 6px;
+    cursor: pointer;
+    color:blue;
+}
+
+.pokemon-member img {
+    width: 80px;
+    height: 80px;
+    border: blue;
+    color:blue;
+    object-fit: contain;
+}
+
+.pokemon-member.seleccionado {
+    border: 2px solid blue;
+}
+
+.pokemon-member input[type="number"] {
+    width: 50px;
+    border-color:blue;
+}
+
+.members-contenedor .resultado {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    align-self: start;
+    margin-top: 55px;
+    min-width: 120px;
+    font-size: 32px;
+    font-weight: bold;
+    white-space: nowrap;
+    color: blue;
+}
+
+.members-contenedor .resultado span {
+    display: inline-block;
+    color: blue;
+}
+
+.members-contenedor .separador-marcador {
+    margin: 0 2px;
+}
+
+.contador {
+    margin-top: 10px;
+    font-weight: bold;
+    color: blue;
+}
+
+/* =========================================
+   MEMBERS LEAGUE - JORNADAS
+   ========================================= */
+
+.members-kills-partido {
+    margin: -5px 10px 15px;
+    padding: 6px 10px;
+    border-top: 1px solid blue;
+    color: blue;
+    font-size: 14px;
+}
+
+.members-kills-miembro {
+    margin-top: 3px;
+}
+
+/* =========================================
+   MEMBERS - ÚLTIMA JORNADA
+   ========================================= */
+
+.members-ultima-jornada {
+    display: flex;
+    justify-content: center;
+    margin: 25px 0 40px;
+}
+
+.members-ultima-jornada .jornada {
+    width: 1100px;
+}
+
+.members-ultima-jornada .partidos-jornada-actual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 30px;
+}
+
+.members-ultima-jornada .partido {
+    min-width: 0;
+    width: 100%;
+}
+
+.members-ultima-jornada .equipo img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border: 2px solid blue;
+    border-radius: 15px;
+}
+
+/* ==========================================
+   ÚLTIMA JORNADA - MEMBERS LEAGUE
+   ========================================== */
+
+.members-ultima-jornada {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.members-ultima-jornada .jornada {
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* Partidos de la última jornada en 2 columnas */
+
+.members-ultima-jornada .partidos-jornada-actual {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(520px, auto));
+    justify-content: center;
+    align-items: start;
+}
+
+/* Si el número de enfrentamientos es impar,
+   el último queda centrado */
+
+.members-ultima-jornada .partidos-jornada-actual > .partido:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+}
+
+/* Cuando solo hay un enfrentamiento,
+   el borde se ajusta únicamente a ese combate */
+
+.members-ultima-jornada.una-jornada .jornada {
+    width: fit-content;
+}
+
+.members-ultima-jornada.una-jornada .partidos-jornada-actual {
+    display: block;
+}
+
+/* ==========================================
+   MEMBERS: SOLO EL 1º EN AMARILLO
+   ========================================== */
+
+.clasificacion-contenedor.clasificacion-members
+.clasificacion-columna:first-child
+tr:nth-child(n+3):nth-child(-n+7)
+td:not(:first-child) {
+    background-color: transparent;
+}
+
+.clasificacion-contenedor.clasificacion-members
+.clasificacion-columna:first-child
+tr:nth-child(2) td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+/* ==========================================
+   MEMBERS HISTÓRICA
+   1.º amarillo + 2.º-6.º azul/rojo
+   ========================================== */
+
+/* 1.º Clasificado (Amarillo) */
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
+tr:nth-child(2) td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+/* 2.º al 6.º Clasificado (Azul) */
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
+tr:nth-child(n+3):nth-child(-n+7) td:not(:first-child) {
+    background-color: #dbeeff;
+}
+
+/* A partir del 7.º Clasificado (Transparente) */
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
+tr:nth-child(n+8) td:not(:first-child) {
+    background-color: transparent;
+}
+
+/* ==========================================
+   HISTÓRICA LEGENDARY LEAGUE
+   ========================================== */
+
+/* 1.º puesto: amarillo excepto Pos */
+.historica-legendary
+.clasificacion-columna:first-child
+tr:nth-child(2)
+td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+
+/* 2.º al 6.º: azul excepto Pos */
+.historica-legendary
+.clasificacion-columna:first-child
+tr:nth-child(n+3):nth-child(-n+7)
+td:not(:first-child) {
+    background-color: #dbeeff;
+}
+
+
+/* Desde el 7.º: normal */
+.historica-legendary
+.clasificacion-columna:first-child
+tr:nth-child(n+8)
+td:not(:first-child) {
+    background-color: transparent;
 }

@@ -296,11 +296,30 @@ datos.forEach(function(fila) {
 
         let cantidad;
 
-        if (fase.value == "F") {
-            cantidad = datosTemporada.sets_final;
-        } else {
-            cantidad = datosTemporada.sets_fase;
-        }
+if (datosTemporada.tipo == "segunda") {
+
+    if (
+        fase.value == "R2" ||
+        fase.value == "R3" ||
+        fase.value == "OCT" ||
+        fase.value == "QF" ||
+        fase.value == "SF" ||
+        fase.value == "F"
+    ) {
+        cantidad = 3;
+    } else {
+        cantidad = 1;
+    }
+
+} else {
+
+    if (fase.value == "F") {
+        cantidad = datosTemporada.sets_final;
+    } else {
+        cantidad = datosTemporada.sets_fase;
+    }
+
+}
 
         const nombreLocal = localBusqueda.value;
 

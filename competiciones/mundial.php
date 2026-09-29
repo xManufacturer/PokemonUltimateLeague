@@ -40,7 +40,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<h1>Mundial</h1>
+<div>
+            <img src="../img/logos/mundial.png" alt="Mundial" class="logos">
+        </div>
 
     <a href="../index.php" class="btn-inicio">
         <img src="../img/inicio.png" alt="Inicio">

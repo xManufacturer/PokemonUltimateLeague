@@ -2,108 +2,266 @@
 require_once 'config/conexion.php';
 session_start();
 
-$sql = "SELECT
-            p.competicion_temporada_id,
-            c.nombre AS competicion,
-            t.numero AS temporada
-        FROM partidos p
-        JOIN competiciones_temporadas ct
-            ON p.competicion_temporada_id = ct.id
-        JOIN competiciones c
-            ON ct.competicion_id = c.id
-        JOIN temporadas t
-            ON ct.temporada_id = t.id
-        ORDER BY p.id DESC
-        LIMIT 1";
+/*
+ * ============================================================
+ * ÚLTIMA COMPETICIÓN ACTUALIZADA
+ * ============================================================
+ *
+ * Usamos fecha_actualizacion porque los partidos normales
+ * y los partidos de Members están en tablas diferentes.
+ *
+ * Así sabemos realmente qué competición ha tenido el
+ * combate registrado más recientemente.
+ */
+
+$sql = "
+    SELECT
+        ct.id AS competicion_temporada_id,
+        c.nombre AS competicion,
+        c.tipo,
+        t.numero AS temporada
+    FROM competiciones_temporadas ct
+
+    JOIN competiciones c
+        ON ct.competicion_id = c.id
+
+    JOIN temporadas t
+        ON ct.temporada_id = t.id
+
+    WHERE ct.fecha_actualizacion IS NOT NULL
+
+    ORDER BY ct.fecha_actualizacion DESC
+
+    LIMIT 1
+";
 
 $resultado = $conn->query($sql);
 
 $ultimaCompeticion = $resultado->fetch_assoc();
 
-$sql = "SELECT
-            nombre,
-            ruta
-        FROM competiciones
-        WHERE visible = 1
-        ORDER BY id";
 
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$resultado = $stmt->get_result();
-
-$sql = "SELECT
-            p.id,
-            pl.nombre AS local,
-            pl.imagen AS imagen_local,
-            pv.nombre AS visitante,
-            pv.imagen AS imagen_visitante
-        FROM partidos p
-        JOIN participantes l
-            ON p.local_id = l.id
-        JOIN pokemon pl
-            ON l.pokemon_id = pl.id
-        JOIN participantes v
-            ON p.visitante_id = v.id
-        JOIN pokemon pv
-            ON v.pokemon_id = pv.id
-        WHERE p.competicion_temporada_id = ?
-        ORDER BY p.id DESC
-        LIMIT 3";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $ultimaCompeticion["competicion_temporada_id"]);
-$stmt->execute();
-
-$ultimosPartidos = $stmt->get_result();
+/*
+ * ============================================================
+ * ÚLTIMOS COMBATES
+ * ============================================================
+ */
 
 $partidosInicio = [];
 
-while($partido = $ultimosPartidos->fetch_assoc()){
 
-    $sql = "SELECT vida_local, vida_visitante
-            FROM sets
-            WHERE partido_id = ?";
+/*
+ * ============================================================
+ * MEMBERS LEAGUE
+ * ============================================================
+ */
 
-    $stmtSets = $conn->prepare($sql);
-    $stmtSets->bind_param("i",$partido["id"]);
-    $stmtSets->execute();
+if (
+    $ultimaCompeticion &&
+    $ultimaCompeticion["tipo"] == "members"
+) {
 
-    $sets = $stmtSets->get_result();
+    $sql = "
+        SELECT
 
-    $ganadosLocal = 0;
-$ganadosVisitante = 0;
+            mp.id,
 
-$marcadores = [];
+            ml.nombre AS local,
+            ml.imagen AS imagen_local,
 
-while($set = $sets->fetch_assoc()){
+            mv.nombre AS visitante,
+            mv.imagen AS imagen_visitante,
 
-    $marcadores[] = [
-        "local" => $set["vida_local"],
-        "visitante" => $set["vida_visitante"]
-    ];
+            mp.kills_local,
+            mp.kills_visitante
 
-    if($set["vida_local"] > $set["vida_visitante"]){
-        $ganadosLocal++;
-    }elseif($set["vida_visitante"] > $set["vida_local"]){
-        $ganadosVisitante++;
+        FROM members_partidos mp
+
+        JOIN members_miembros ml
+            ON mp.local_id = ml.id
+
+        JOIN members_miembros mv
+            ON mp.visitante_id = mv.id
+
+        WHERE mp.competicion_temporada_id = ?
+
+        ORDER BY mp.id DESC
+
+        LIMIT 3
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "i",
+        $ultimaCompeticion["competicion_temporada_id"]
+    );
+
+    $stmt->execute();
+
+    $resultadoPartidos = $stmt->get_result();
+
+
+    while ($partido = $resultadoPartidos->fetch_assoc()) {
+
+        $partido["marcador_local"] =
+            (int)$partido["kills_local"];
+
+        $partido["marcador_visitante"] =
+            (int)$partido["kills_visitante"];
+
+        $partidosInicio[] = $partido;
     }
 
-}
 
-if (count($marcadores) == 1) {
-
-    $partido["marcador_local"] = $marcadores[0]["local"];
-    $partido["marcador_visitante"] = $marcadores[0]["visitante"];
+/*
+ * ============================================================
+ * COMPETICIONES NORMALES
+ * ============================================================
+ */
 
 } else {
 
-    $partido["marcador_local"] = $ganadosLocal;
-    $partido["marcador_visitante"] = $ganadosVisitante;
+    $sql = "
+        SELECT
 
+            p.id,
+
+            pl.nombre AS local,
+            pl.imagen AS imagen_local,
+
+            pv.nombre AS visitante,
+            pv.imagen AS imagen_visitante
+
+        FROM partidos p
+
+        JOIN participantes l
+            ON p.local_id = l.id
+
+        JOIN pokemon pl
+            ON l.pokemon_id = pl.id
+
+        JOIN participantes v
+            ON p.visitante_id = v.id
+
+        JOIN pokemon pv
+            ON v.pokemon_id = pv.id
+
+        WHERE p.competicion_temporada_id = ?
+
+        ORDER BY p.id DESC
+
+        LIMIT 3
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bind_param(
+        "i",
+        $ultimaCompeticion["competicion_temporada_id"]
+    );
+
+    $stmt->execute();
+
+    $ultimosPartidos = $stmt->get_result();
+
+
+    while ($partido = $ultimosPartidos->fetch_assoc()) {
+
+        $sql = "
+            SELECT
+                vida_local,
+                vida_visitante
+            FROM sets
+            WHERE partido_id = ?
+        ";
+
+        $stmtSets = $conn->prepare($sql);
+
+        $stmtSets->bind_param(
+            "i",
+            $partido["id"]
+        );
+
+        $stmtSets->execute();
+
+        $sets = $stmtSets->get_result();
+
+
+        $ganadosLocal = 0;
+        $ganadosVisitante = 0;
+
+        $marcadores = [];
+
+
+        while ($set = $sets->fetch_assoc()) {
+
+            $marcadores[] = [
+                "local" => $set["vida_local"],
+                "visitante" => $set["vida_visitante"]
+            ];
+
+
+            if (
+                $set["vida_local"] >
+                $set["vida_visitante"]
+            ) {
+
+                $ganadosLocal++;
+
+            } elseif (
+                $set["vida_visitante"] >
+                $set["vida_local"]
+            ) {
+
+                $ganadosVisitante++;
+            }
+        }
+
+
+        if (count($marcadores) == 1) {
+
+            $partido["marcador_local"] =
+                $marcadores[0]["local"];
+
+            $partido["marcador_visitante"] =
+                $marcadores[0]["visitante"];
+
+        } else {
+
+            $partido["marcador_local"] =
+                $ganadosLocal;
+
+            $partido["marcador_visitante"] =
+                $ganadosVisitante;
+        }
+
+
+        $partidosInicio[] = $partido;
+    }
 }
 
-    $partidosInicio[] = $partido;
-}
+
+/*
+ * ============================================================
+ * COMPETICIONES VISIBLES
+ * ============================================================
+ */
+
+$sql = "
+    SELECT
+        nombre,
+        ruta
+    FROM competiciones
+    WHERE visible = 1
+    ORDER BY id
+";
+
+$stmt = $conn->prepare($sql);
+
+$stmt->execute();
+
+$resultado = $stmt->get_result();
+
 ?>
 
 <!DOCTYPE html>
@@ -129,6 +287,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
     <header class="cabecera-principal">
+        
         <div class="contenedor-iconos-sociales">
             <a class="enlace-icono" href="https://discord.gg/5CzWTMf8aq" target="_blank">
                 <img src="img/discord.png" alt="Discord">
@@ -137,8 +296,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <img src="img/youtube.png" alt="YouTube">
             </a>
         </div>
-        
-        <h1>Pokémon Ultimate League</h1>
+
+        <div>
+            <img src="img/logos/pokemon_ultimate_league.png" alt="Pokémon Ultimate League" class="logos">
+        </div>
+
     </header>
 
     <div class="admin-icon">
@@ -164,26 +326,72 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         Temporada <?php echo $ultimaCompeticion["temporada"]; ?>
     </h3>
 
-<?php foreach($partidosInicio as $partido){ ?>
+    <?php foreach($partidosInicio as $partido){ ?>
 
     <div class="partido">
 
         <div class="equipo local">
-            <img src="img/pokemon/<?php echo $partido["imagen_local"]; ?>">
-            <span><?php echo $partido["local"]; ?></span>
+
+            <?php if ($ultimaCompeticion["tipo"] == "members") { ?>
+
+                <img
+                    src="img/members/<?php echo htmlspecialchars($partido["imagen_local"]); ?>"
+                    alt="<?php echo htmlspecialchars($partido["local"]); ?>"
+                >
+
+            <?php } else { ?>
+
+                <img
+                    src="img/pokemon/<?php echo htmlspecialchars($partido["imagen_local"]); ?>"
+                    alt="<?php echo htmlspecialchars($partido["local"]); ?>"
+                >
+
+            <?php } ?>
+
+            <span>
+                <?php echo htmlspecialchars($partido["local"]); ?>
+            </span>
+
         </div>
+
 
         <div class="resultado">
+
             <div class="resultado-sets">
+
                 <?php echo $partido["marcador_local"]; ?>
+
                 -
+
                 <?php echo $partido["marcador_visitante"]; ?>
+
             </div>
+
         </div>
 
+
         <div class="equipo visitante">
-            <span><?php echo $partido["visitante"]; ?></span>
-            <img src="img/pokemon/<?php echo $partido["imagen_visitante"]; ?>">
+
+            <span>
+                <?php echo htmlspecialchars($partido["visitante"]); ?>
+            </span>
+
+            <?php if ($ultimaCompeticion["tipo"] == "members") { ?>
+
+                <img
+                    src="img/members/<?php echo htmlspecialchars($partido["imagen_visitante"]); ?>"
+                    alt="<?php echo htmlspecialchars($partido["visitante"]); ?>"
+                >
+
+            <?php } else { ?>
+
+                <img
+                    src="img/pokemon/<?php echo htmlspecialchars($partido["imagen_visitante"]); ?>"
+                    alt="<?php echo htmlspecialchars($partido["visitante"]); ?>"
+                >
+
+            <?php } ?>
+
         </div>
 
     </div>
@@ -209,7 +417,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="futuras-adiciones">
         <h3>Aspectos que faltan y futuras adiciones:</h3>
         <ul>
-            <li>Adaptar la web a dispositivos móviles</li>
             <li>Mejora general de diseño de la web.</li>
             <li>Fichas individuales de cada Pokémon.</li>
             <li>Historial de enfrentamientos entre dos Pokémon.</li>

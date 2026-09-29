@@ -32,6 +32,264 @@ if ($competicion->num_rows === 0) {
 $datos = $competicion->fetch_assoc();
 
 // ============================================================
+// MEMBERS LEAGUE
+// Última jornada + todas las jornadas
+// ============================================================
+
+$ultimaJornadaMembers = null;
+$partidosUltimaJornadaMembers = [];
+$jornadasMembers = [];
+$killsPorPartidoMembers = [];
+
+if ($datos["tipo"] == "members") {
+
+    /*
+     * ==========================================
+     * ÚLTIMA JORNADA DISPUTADA
+     * ==========================================
+     */
+
+    $sql = "SELECT MAX(jornada) AS ultima_jornada
+            FROM members_partidos
+            WHERE competicion_temporada_id = ?";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $resultado = $stmt->get_result();
+    $fila = $resultado->fetch_assoc();
+
+    if (
+        $fila &&
+        $fila["ultima_jornada"] !== null
+    ) {
+
+        $ultimaJornadaMembers =
+            (int)$fila["ultima_jornada"];
+
+    }
+
+
+    /*
+     * ==========================================
+     * PARTIDOS DE LA ÚLTIMA JORNADA
+     * ==========================================
+     */
+
+    if ($ultimaJornadaMembers !== null) {
+
+        $sql = "SELECT
+                    mp.id,
+                    mp.local_id,
+                    mp.visitante_id,
+                    mp.kills_local,
+                    mp.kills_visitante,
+                    ml.nombre AS local,
+                    ml.imagen AS imagen_local,
+                    mv.nombre AS visitante,
+                    mv.imagen AS imagen_visitante
+                FROM members_partidos mp
+
+                INNER JOIN members_miembros ml
+                    ON ml.id = mp.local_id
+
+                INNER JOIN members_miembros mv
+                    ON mv.id = mp.visitante_id
+
+                WHERE mp.competicion_temporada_id = ?
+                AND mp.jornada = ?
+
+                ORDER BY mp.id";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bind_param(
+            "ii",
+            $id,
+            $ultimaJornadaMembers
+        );
+
+        $stmt->execute();
+
+        $resultado =
+            $stmt->get_result();
+
+        while (
+            $partido =
+            $resultado->fetch_assoc()
+        ) {
+
+            $partidosUltimaJornadaMembers[] =
+                $partido;
+
+        }
+
+    }
+
+
+    /*
+     * ==========================================
+     * TODAS LAS JORNADAS
+     * ==========================================
+     */
+
+    $sql = "SELECT
+                mp.id,
+                mp.jornada,
+                mp.local_id,
+                mp.visitante_id,
+                mp.kills_local,
+                mp.kills_visitante,
+                ml.nombre AS local,
+                ml.imagen AS imagen_local,
+                mv.nombre AS visitante,
+                mv.imagen AS imagen_visitante
+            FROM members_partidos mp
+
+            INNER JOIN members_miembros ml
+                ON ml.id = mp.local_id
+
+            INNER JOIN members_miembros mv
+                ON mv.id = mp.visitante_id
+
+            WHERE mp.competicion_temporada_id = ?
+
+            ORDER BY
+                mp.jornada ASC,
+                mp.id ASC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $resultado =
+        $stmt->get_result();
+
+    while (
+        $partido =
+        $resultado->fetch_assoc()
+    ) {
+
+        $jornada =
+            (int)$partido["jornada"];
+
+        if (
+            !isset(
+                $jornadasMembers[$jornada]
+            )
+        ) {
+
+            $jornadasMembers[$jornada] = [];
+
+        }
+
+        $jornadasMembers[$jornada][] =
+            $partido;
+    }
+
+
+    /*
+     * ==========================================
+     * KILLS DE CADA PARTIDO
+     * ==========================================
+     */
+
+    $sql = "SELECT
+                mk.partido_id,
+                mk.miembro_id,
+                mk.pokemon_id,
+                mk.kills,
+                p.nombre AS pokemon
+
+            FROM members_kills mk
+
+            INNER JOIN pokemon p
+                ON p.id = mk.pokemon_id
+
+            INNER JOIN members_partidos mp
+                ON mp.id = mk.partido_id
+
+            WHERE mp.competicion_temporada_id = ?
+            AND mk.kills > 0
+
+            ORDER BY
+                mk.partido_id,
+                mk.miembro_id,
+                mk.kills DESC,
+                p.id ASC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $resultado =
+        $stmt->get_result();
+
+    while (
+        $kill =
+        $resultado->fetch_assoc()
+    ) {
+
+        $partidoId =
+            (int)$kill["partido_id"];
+
+        $miembroId =
+            (int)$kill["miembro_id"];
+
+        if (
+            !isset(
+                $killsPorPartidoMembers[$partidoId]
+            )
+        ) {
+
+            $killsPorPartidoMembers[$partidoId] = [];
+
+        }
+
+        if (
+            !isset(
+                $killsPorPartidoMembers[$partidoId][$miembroId]
+            )
+        ) {
+
+            $killsPorPartidoMembers[$partidoId][$miembroId] = [];
+
+        }
+
+        $killsPorPartidoMembers
+            [$partidoId]
+            [$miembroId][] = [
+                "pokemon" =>
+                    $kill["pokemon"],
+
+                "kills" =>
+                    (int)$kill["kills"]
+            ];
+    }
+}
+
+/*
+ * ============================================================
+ * MEMBERS LEAGUE
+ * ============================================================
+ */
+
+$clasificacionMembers = [];
+$killCountMembers = [];
+
+if ($datos["tipo"] == "members") {
+
+    $members = obtenerClasificacionMembers(
+        $conn,
+        $id
+    );
+
+    $clasificacionMembers = $members["clasificacion"];
+    $killCountMembers = $members["killCount"];
+}
+
+// ============================================================
 // BOTÓN PARA IR A LA PROMOCIÓN CORRESPONDIENTE
 // ============================================================
 
@@ -284,7 +542,9 @@ if ($resultadoSegunda->num_rows > 0) {
          ====================================================== -->
 <?php if ($datos["tipo"] == "segunda" || $datos["tipo"] == "promocion") { ?>
 
+    <?php if ($datos["tipo"] != "promocion") { ?>
     <h2>Fases</h2>
+<?php } ?>
 
     <?php
 
@@ -354,13 +614,19 @@ if ($resultadoSegunda->num_rows > 0) {
 
             ?>
 
-            <div class="fase">
+            <div class="fase <?php echo ($datos["tipo"] == "promocion") ? 'fase-promocion' : ''; ?>">
 
-                <h3 class="titulo-fase">
-                    <?php echo $nombreFase; ?>
-                </h3>
+    <h3 class="titulo-fase">
+        <?php echo $nombreFase; ?>
+    </h3>
 
-                <div class="partidos-fase <?php echo ($partidosFase->num_rows === 1) ? 'un-solo-partido' : ''; ?>">
+    <div class="partidos-fase <?php
+        echo ($partidosFase->num_rows === 1) ? 'un-solo-partido' : '';
+
+        if ($datos["tipo"] == "promocion") {
+            echo ' final-promocion';
+        }
+    ?>">
 
                     <?php while ($partido = $partidosFase->fetch_assoc()) { ?>
 
@@ -499,9 +765,121 @@ if ($resultadoSegunda->num_rows > 0) {
 
 <?php } ?>
 
-<?php if ($datos["tipo"] != "segunda" && $datos["tipo"] != "promocion") { ?>
+<?php if ($datos["tipo"] == "members") { ?>
 
-    <h2>Última Jornada</h2>
+    <br><h2>Última Jornada</h2>
+
+    <?php if ($ultimaJornadaMembers === null) { ?>
+
+        <div class="contenedor-jornada-actual">
+
+            <div class="jornada">
+
+                <h3>
+                    Todavía no se ha disputado ninguna jornada
+                </h3>
+
+            </div>
+
+        </div>
+
+    <?php } else { ?>
+
+        <div class="contenedor-jornada-actual members-ultima-jornada<?php echo count($partidosUltimaJornadaMembers) == 1 ? ' una-jornada' : ''; ?>">
+
+    <div class="jornada">
+
+        <h3>
+            Jornada <?php echo $ultimaJornadaMembers; ?>
+        </h3>
+
+        <div class="partidos-jornada-actual">
+
+            <?php foreach (
+                $partidosUltimaJornadaMembers
+                as $partido
+            ) { ?>
+
+                <div class="partido">
+
+                    <!-- LOCAL -->
+
+                    <div class="equipo local">
+
+    <?php if (!empty($partido["imagen_local"])) { ?>
+
+        <img
+            src="img/members/<?php echo htmlspecialchars($partido["imagen_local"]); ?>"
+            alt="<?php echo htmlspecialchars($partido["local"]); ?>">
+
+    <?php } ?>
+
+    <span>
+        <?php echo htmlspecialchars($partido["local"]); ?>
+    </span>
+
+</div>
+
+                    <!-- MARCADOR -->
+
+                    <div class="resultado">
+
+                        <div class="resultado-sets">
+
+                            <?php
+                            echo $partido["kills_local"];
+                            ?>
+
+                            -
+
+                            <?php
+                            echo $partido["kills_visitante"];
+                            ?>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VISITANTE -->
+
+                    <div class="equipo visitante">
+
+    <span>
+        <?php echo htmlspecialchars($partido["visitante"]); ?>
+    </span>
+
+    <?php if (!empty($partido["imagen_visitante"])) { ?>
+
+        <img
+            src="img/members/<?php echo htmlspecialchars($partido["imagen_visitante"]); ?>"
+            alt="<?php echo htmlspecialchars($partido["visitante"]); ?>">
+
+    <?php } ?>
+
+</div>
+
+                </div>
+
+            <?php } ?>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <?php } ?>
+
+<?php } ?>
+
+<?php if (
+    $datos["tipo"] != "segunda" &&
+    $datos["tipo"] != "promocion" &&
+    $datos["tipo"] != "members"
+) { ?>
+
+    <br><h2>Última Jornada</h2>
 
 <?php
 
@@ -780,7 +1158,11 @@ while ($set = $sets->fetch_assoc()) {
     </div>
 <?php } ?>
 
-<?php if ($datos["tipo"] != "promocion" && $datos["tipo"] != "segunda") { ?>
+<?php if (
+    $datos["tipo"] != "promocion" &&
+    $datos["tipo"] != "segunda" &&
+    $datos["tipo"] != "members"
+) { ?>
 
     <h2>Clasificación</h2>
 
@@ -1182,11 +1564,407 @@ $unaColumna = ($totalParticipantes <= 10);
 
 <?php } ?>
 
+<?php if ($datos["tipo"] == "members") { ?>
+
+    <h2>Clasificación</h2>
+
+    <div class="clasificacion-contenedor clasificacion-members">
+
+        <div class="clasificacion-columna">
+
+            <table>
+
+                <tr>
+                    <th>Pos</th>
+                    <th>Entrenador</th>
+                    <th>Com</th>
+                    <th>V</th>
+                    <th>E</th>
+                    <th>D</th>
+                    <th>Set+</th>
+                    <th>Set-</th>
+                    <th>Dif</th>
+                    <th>Pts</th>
+                </tr>
+
+                <?php
+
+                $posicion = 1;
+
+                foreach ($clasificacionMembers as $fila) {
+
+                ?>
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                <?php echo $posicion; ?>
+                            </strong>
+                        </td>
+
+                        <td>
+
+                            <div class="pokemon-clasificacion">
+
+                                <?php if (!empty($fila["imagen"])) { ?>
+
+                                    <img
+                                        src="img/members/<?php echo htmlspecialchars($fila["imagen"]); ?>"
+                                        alt="<?php echo htmlspecialchars($fila["nombre"]); ?>"
+                                    >
+
+                                <?php } ?>
+
+                                <span>
+                                    <?php echo htmlspecialchars($fila["nombre"]); ?>
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+                            <?php echo $fila["pj"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo $fila["pg"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo $fila["pe"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo $fila["pp"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo $fila["kaf"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo $fila["kec"]; ?>
+                        </td>
+
+                        <td>
+                            <strong>
+                                <?php
+                                echo ($fila["dif"] > 0 ? "+" : "") . $fila["dif"];
+                                ?>
+                            </strong>
+                        </td>
+
+                        <td>
+                            <strong>
+                                <?php echo $fila["pts"]; ?>
+                            </strong>
+                        </td>
+
+                    </tr>
+
+                <?php
+
+                    $posicion++;
+
+                }
+
+                ?>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php } ?>
+
+<?php if ($datos["tipo"] == "members") { ?>
+
+    <br><h2>Kill Count</h2>
+
+    <div class="clasificacion-contenedor">
+
+        <div class="clasificacion-columna">
+
+            <table>
+
+                <th>Pos</th>
+                <th>Pokémon</th>
+                <th>Entrenador</th>
+                <th>Com</th>
+                <th>Kills</th>
+
+                <?php
+
+                $posicionKill = 1;
+
+                foreach ($killCountMembers as $fila) {
+
+                ?>
+
+                    <tr>
+
+    <td>
+        <strong>
+            <?php echo $posicionKill; ?>
+        </strong>
+    </td>
+
+    <td>
+
+        <div class="pokemon-clasificacion">
+
+            <img
+                src="img/pokemon/<?php echo htmlspecialchars($fila["imagen_pokemon"]); ?>"
+                alt="<?php echo htmlspecialchars($fila["pokemon"]); ?>"
+            >
+
+            <span>
+                <?php echo htmlspecialchars($fila["pokemon"]); ?>
+            </span>
+
+        </div>
+
+    </td>
+
+    <td>
+
+        <div class="pokemon-clasificacion members-miembro-kill">
+
+            <?php if (!empty($fila["imagen_miembro"])) { ?>
+
+                <img
+                    src="img/members/<?php echo htmlspecialchars($fila["imagen_miembro"]); ?>"
+                    alt="<?php echo htmlspecialchars($fila["miembro"]); ?>"
+                >
+
+            <?php } ?>
+
+            <span>
+                <?php echo htmlspecialchars($fila["miembro"]); ?>
+            </span>
+
+        </div>
+
+    </td>
+
+    <td>
+        <strong>
+            <?php echo $fila["combates"]; ?>
+        </strong>
+    </td>
+
+    <td>
+        <strong>
+            <?php echo $fila["kills"]; ?>
+        </strong>
+    </td>
+
+</tr>
+
+                <?php
+
+                    $posicionKill++;
+
+                }
+
+                ?>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<?php } ?>
+
+<?php if ($datos["tipo"] == "members") { ?>
+
+    <br><h2>Jornadas</h2>
+
+    <div class="contenedor-jornadas">
+
+        <?php foreach (
+            $jornadasMembers as $numeroJornada => $partidosJornada
+        ) { ?>
+
+            <div class="jornada">
+
+                <h3>
+                    Jornada <?php echo $numeroJornada; ?>
+                </h3>
+
+
+                <?php foreach (
+                    $partidosJornada
+                    as $partido
+                ) { ?>
+
+                    <div class="partido">
+
+                        <!-- LOCAL -->
+
+                        <div class="equipo local">
+
+    <?php if (!empty($partido["imagen_local"])) { ?>
+
+        <img
+            src="img/members/<?php echo htmlspecialchars($partido["imagen_local"]); ?>"
+            alt="<?php echo htmlspecialchars($partido["local"]); ?>">
+
+    <?php } ?>
+
+    <span>
+        <?php echo htmlspecialchars($partido["local"]); ?>
+    </span>
+
+</div>
+
+
+                        <!-- MARCADOR -->
+
+                        <div class="resultado">
+
+                            <div class="resultado-sets">
+
+                                <?php
+                                echo $partido["kills_local"];
+                                ?>
+
+                                -
+
+                                <?php
+                                echo $partido["kills_visitante"];
+                                ?>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- VISITANTE -->
+
+                        <div class="equipo visitante">
+
+    <span>
+        <?php echo htmlspecialchars($partido["visitante"]); ?>
+    </span>
+
+    <?php if (!empty($partido["imagen_visitante"])) { ?>
+
+        <img
+            src="img/members/<?php echo htmlspecialchars($partido["imagen_visitante"]); ?>"
+            alt="<?php echo htmlspecialchars($partido["visitante"]); ?>">
+
+    <?php } ?>
+
+</div>
+
+                    </div>
+
+
+                    <?php
+
+                    /*
+                     * ==================================
+                     * KILLS DEL PARTIDO
+                     * ==================================
+                     */
+
+                    $partidoId =
+                        (int)$partido["id"];
+
+                    if (
+                        isset(
+                            $killsPorPartidoMembers[$partidoId]
+                        )
+                    ) {
+
+                    ?>
+
+                        <div class="members-kills-partido">
+
+                            <?php foreach (
+                                $killsPorPartidoMembers[$partidoId]
+                                as $miembroId => $kills
+                            ) { ?>
+
+                                <div class="members-kills-miembro">
+
+                                    <strong>
+
+                                        <?php
+                                        if (
+                                            $miembroId ==
+                                            $partido["local_id"]
+                                        ) {
+
+                                            echo htmlspecialchars(
+                                                $partido["local"]
+                                            );
+
+                                        } else {
+
+                                            echo htmlspecialchars(
+                                                $partido["visitante"]
+                                            );
+
+                                        }
+                                        ?>
+
+                                    </strong>
+
+                                    :
+
+                                    <?php foreach (
+                                        $kills
+                                        as $indice => $kill
+                                    ) { ?>
+
+                                        <?php if (
+                                            $indice > 0
+                                        ) {
+                                            echo ", ";
+                                        } ?>
+
+                                        <?php
+                                        echo htmlspecialchars(
+                                            $kill["pokemon"]
+                                        );
+                                        ?>
+
+                                        (<?php
+                                        echo $kill["kills"];
+                                        ?>)
+
+                                    <?php } ?>
+
+                                </div>
+
+                            <?php } ?>
+
+                        </div>
+
+                    <?php } ?>
+
+                <?php } ?>
+
+            </div>
+
+        <?php } ?>
+
+    </div>
+
+<?php } ?>
+
         <?php if (
     $datos["tipo"] != "copa" &&
     $datos["tipo"] != "promocion" &&
     $datos["competicion"] != "Legendary League" &&
-    $datos["tipo"] != "segunda"
+    $datos["tipo"] != "segunda" &&
+    $datos["tipo"] != "members"
 ) { ?>
 <div class="leyenda-clasificacion">
 
@@ -1219,8 +1997,11 @@ $unaColumna = ($totalParticipantes <= 10);
 
 <?php } ?>
 
-    <?php if ($datos["tipo"] != "segunda" && $datos["tipo"] != "promocion") { ?>
-
+        <?php if (
+    $datos["tipo"] != "segunda" &&
+    $datos["tipo"] != "promocion" &&
+    $datos["tipo"] != "members"
+) { ?>
     <h2>Jornadas</h2>
     <div class="contenedor-jornadas">
 
