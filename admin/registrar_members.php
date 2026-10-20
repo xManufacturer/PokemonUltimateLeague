@@ -15,7 +15,8 @@ $competicion = 17;
 $sql = "SELECT
             ct.id,
             t.numero,
-            ct.jornadas
+            ct.jornadas,
+            ct.sets_final
         FROM competiciones_temporadas ct
         INNER JOIN temporadas t
             ON ct.temporada_id = t.id
@@ -101,12 +102,13 @@ $temporadas = $stmt->get_result();
         <?php while ($fila = $temporadas->fetch_assoc()) { ?>
 
             <option
-                value="<?php echo $fila['id']; ?>"
-                data-jornadas="<?php echo $fila['jornadas']; ?>">
+    value="<?php echo $fila['id']; ?>"
+    data-jornadas="<?php echo $fila['jornadas']; ?>"
+    data-sets-final="<?php echo $fila['sets_final']; ?>">
 
-                Temporada <?php echo $fila['numero']; ?>
+    Temporada <?php echo $fila['numero']; ?>
 
-            </option>
+</option>
 
         <?php } ?>
 
@@ -116,6 +118,22 @@ $temporadas = $stmt->get_result();
     <br><br>
 
 
+    <!-- =========================================
+     FASE
+     ========================================= -->
+<label for="fase">
+    <strong>Fase</strong>
+</label>
+
+<select name="fase" id="fase" required>
+    <option value="">...</option>
+    <option value="L">Liga</option>
+    <option value="SF">Semifinales</option>
+    <option value="F">Final</option>
+</select>
+
+<br><br>
+    
     <!-- =========================================
          JORNADA
          ========================================= -->
@@ -195,7 +213,7 @@ $temporadas = $stmt->get_result();
      COMBATE
      ========================================= -->
 
-<div class="members-contenedor">
+<div class="members-contenedor" id="contenedorLigaMembers">
 
 
     <!-- =========================
@@ -270,6 +288,71 @@ $temporadas = $stmt->get_result();
 
 </div>
 
+<!-- =========================================
+     COMBATE DE PLAYOFFS: TRES SETS
+     ========================================= -->
+
+<div id="contenedorSetsMembers" style="display:none;">
+
+    <div class="set-members" data-set="1">
+        <h3>Set 1</h3>
+
+        <div class="members-contenedor">
+            <div class="members-jugador">
+                <h4 id="tituloLocalSet1">Local</h4>
+                <div id="equipoLocalSet1" class="pokemon-members"></div>
+                <div>Marcador local: <span id="marcadorLocalSet1">0</span></div>
+            </div>
+
+            <div class="members-jugador">
+                <h4 id="tituloVisitanteSet1">Visitante</h4>
+                <div id="equipoVisitanteSet1" class="pokemon-members"></div>
+                <div>Marcador visitante: <span id="marcadorVisitanteSet1">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="set-members" data-set="2">
+        <h3>Set 2</h3>
+
+        <div class="members-contenedor">
+            <div class="members-jugador">
+                <h4 id="tituloLocalSet2">Local</h4>
+                <div id="equipoLocalSet2" class="pokemon-members"></div>
+                <div>Marcador local: <span id="marcadorLocalSet2">0</span></div>
+            </div>
+
+            <div class="members-jugador">
+                <h4 id="tituloVisitanteSet2">Visitante</h4>
+                <div id="equipoVisitanteSet2" class="pokemon-members"></div>
+                <div>Marcador visitante: <span id="marcadorVisitanteSet2">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="set-members" data-set="3">
+        <h3>Set 3 (solo si hace falta)</h3>
+
+        <div class="members-contenedor">
+            <div class="members-jugador">
+                <h4 id="tituloLocalSet3">Local</h4>
+                <div id="equipoLocalSet3" class="pokemon-members"></div>
+                <div>Marcador local: <span id="marcadorLocalSet3">0</span></div>
+            </div>
+
+            <div class="members-jugador">
+                <h4 id="tituloVisitanteSet3">Visitante</h4>
+                <div id="equipoVisitanteSet3" class="pokemon-members"></div>
+                <div>Marcador visitante: <span id="marcadorVisitanteSet3">0</span></div>
+            </div>
+        </div>
+    </div>
+
+</div>
 
     <div style="text-align:center;">
 
@@ -296,6 +379,8 @@ $temporadas = $stmt->get_result();
 
 const temporada =
     document.getElementById("temporada");
+
+const fase = document.getElementById("fase");
 
 const jornada =
     document.getElementById("jornada");
@@ -333,6 +418,80 @@ const marcadorLocal =
 const marcadorVisitante =
     document.getElementById("marcadorVisitante");
 
+const contenedorSetsMembers = document.getElementById('contenedorSetsMembers');
+const contenedorLigaMembers = document.getElementById('contenedorLigaMembers');
+
+function actualizarCampoJornada() {
+    const esFaseLiga = fase.value === "L";
+
+    const opcionTemporada =
+        temporada.options[temporada.selectedIndex];
+
+    const setsFinal =
+        parseInt(opcionTemporada?.dataset.setsFinal) || 0;
+
+    // Los playoffs solo están disponibles si sets_final > 0.
+    Array.from(fase.options).forEach(opcion => {
+        if (opcion.value === "SF" || opcion.value === "F") {
+            opcion.disabled = !temporada.value || setsFinal <= 0;
+        }
+    });
+
+    if (fase.selectedOptions[0]?.disabled) {
+        fase.value = "";
+    }
+
+    jornada.disabled = !esFaseLiga;
+    jornada.required = esFaseLiga;
+
+    jornada.innerHTML = '<option value="">...</option>';
+
+    if (!esFaseLiga) {
+        return;
+    }
+
+    const numeroJornadas =
+        parseInt(opcionTemporada?.dataset.jornadas) || 0;
+
+    for (let i = 1; i <= numeroJornadas; i++) {
+        const opcion = document.createElement("option");
+        opcion.value = i;
+        opcion.textContent = "Jornada " + i;
+        jornada.appendChild(opcion);
+    }
+}
+
+function actualizarVistaSetsMembers() {
+    const faseActual = fase.value;
+    const esPlayoff = faseActual === "SF" || faseActual === "F";
+    const esLiga = faseActual === "L";
+
+    // !important para imponerse a las reglas CSS existentes.
+    contenedorLigaMembers.style.setProperty(
+        "display",
+        esLiga ? "flex" : "none",
+        "important"
+    );
+
+    contenedorSetsMembers.style.setProperty(
+        "display",
+        esPlayoff ? "block" : "none",
+        "important"
+    );
+
+    if (esPlayoff) {
+        cargarEquiposSets();
+    }
+}
+
+fase.addEventListener("change", function () {
+actualizarCampoJornada();
+actualizarVistaSetsMembers();
+});
+
+// Aplicar la vista correcta al cargar el formulario.
+actualizarCampoJornada();
+actualizarVistaSetsMembers();
 
 /*
  * Temporada
@@ -340,52 +499,183 @@ const marcadorVisitante =
  * Generar jornadas según la temporada
  */
 
-temporada.addEventListener(
-    "change",
-    function () {
+temporada.addEventListener("change", function () {
+    const opcion = temporada.options[temporada.selectedIndex];
 
-        jornada.innerHTML =
-            '<option value="">...</option>';
+    if (!opcion.value) {
+        competicionTemporada.value = "";
+        limpiarEquipos();
+        actualizarCampoJornada();
+        return;
+    }
 
-        const opcion =
-            temporada.options[
-                temporada.selectedIndex
-            ];
+    competicionTemporada.value = temporada.value;
 
-        if (!opcion.value) {
+    // Generar las jornadas según la temporada y la fase seleccionadas
+    actualizarCampoJornada();
 
-            limpiarEquipos();
+    // Cargar los miembros de la temporada
+    cargarMiembrosTemporada();
 
+    // Limpiar los equipos del combate anterior
+    limpiarEquipos();
+});
+
+function cargarEquiposSets() {
+    if (!local.value || !visitante.value || !temporada.value) {
+        return;
+    }
+
+    [1, 2, 3].forEach(numeroSet => {
+        cargarEquipoSet(
+            local.value,
+            numeroSet,
+            "local"
+        );
+
+        cargarEquipoSet(
+            visitante.value,
+            numeroSet,
+            "visitante"
+        );
+
+        const tituloL = document.getElementById("tituloLocalSet" + numeroSet);
+        const tituloV = document.getElementById("tituloVisitanteSet" + numeroSet);
+
+        tituloL.textContent = local.options[local.selectedIndex].text;
+        tituloV.textContent = visitante.options[visitante.selectedIndex].text;
+    });
+}
+
+function cargarEquipoSet(miembroId, numeroSet, lado) {
+    const contenedorId = lado === "local"
+        ? "equipoLocalSet" + numeroSet
+        : "equipoVisitanteSet" + numeroSet;
+
+    const marcadorId = lado === "local"
+        ? "marcadorLocalSet" + numeroSet
+        : "marcadorVisitanteSet" + numeroSet;
+
+    const contenedor = document.getElementById(contenedorId);
+
+    contenedor.innerHTML = "<p>Cargando Pokémon...</p>";
+
+    fetch(
+        "obtener_members_equipo.php?miembro_id=" +
+        encodeURIComponent(miembroId) +
+        "&competicion_temporada=" +
+        encodeURIComponent(temporada.value)
+    )
+    .then(respuesta => {
+        if (!respuesta.ok) {
+            throw new Error("Error HTTP: " + respuesta.status);
+        }
+        return respuesta.json();
+    })
+    .then(pokemon => {
+        contenedor.innerHTML = "";
+
+        if (!Array.isArray(pokemon) || pokemon.length === 0) {
+            contenedor.innerHTML = "<p>Este miembro no tiene Pokémon en esta temporada.</p>";
             return;
         }
-        competicionTemporada.value = temporada.value;
 
-        cargarMiembrosTemporada();
+        pokemon.forEach(p => {
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "pokemon-member";
 
-        const numeroJornadas =
-            parseInt(
-                opcion.dataset.jornadas
-            ) || 0;
+            const nombrePokemon = document.createElement("strong");
+            nombrePokemon.textContent = p.nombre;
 
+            const imagen = document.createElement("img");
+            imagen.src = "../img/pokemon/" + p.nombre.toLowerCase() + ".png";
+            imagen.alt = p.nombre;
 
-        for (
-            let i = 1;
-            i <= numeroJornadas;
-            i++
-        ) {
+            const campoKills = document.createElement("input");
+            campoKills.type = "number";
+            campoKills.name = `sets[${numeroSet}][kills_${lado}][]`;
+            campoKills.className = "kills";
+            campoKills.min = "0";
+            campoKills.max = "4";
+            campoKills.value = "0";
+            campoKills.disabled = true;
 
-            jornada.innerHTML +=
-                `<option value="${i}">
-                    Jornada ${i}
-                </option>`;
+            const campoPokemon = document.createElement("input");
+            campoPokemon.type = "hidden";
+            campoPokemon.name = `sets[${numeroSet}][pokemon_${lado}][]`;
+            campoPokemon.value = p.id;
+            campoPokemon.disabled = true;
 
-        }
+            tarjeta.appendChild(imagen);
+            tarjeta.appendChild(nombrePokemon);
+            tarjeta.appendChild(campoKills);
+            tarjeta.appendChild(campoPokemon);
 
+            campoKills.addEventListener("input", () => {
+                let valor = parseInt(campoKills.value, 10);
 
-        limpiarEquipos();
+                if (Number.isNaN(valor) || valor < 0) valor = 0;
+                if (valor > 4) valor = 4;
 
-    }
-);
+                campoKills.value = valor;
+                actualizarMarcadorSet(numeroSet, lado);
+            });
+
+            tarjeta.addEventListener("click", evento => {
+                if (evento.target.tagName === "INPUT") {
+                    return;
+                }
+
+                if (tarjeta.classList.contains("seleccionado")) {
+                    tarjeta.classList.remove("seleccionado");
+                    campoKills.disabled = true;
+                    campoPokemon.disabled = true;
+                    campoKills.value = 0;
+                } else {
+                    const seleccionados = contenedor.querySelectorAll(
+                        ".pokemon-member.seleccionado"
+                    ).length;
+
+                    if (seleccionados >= 4) {
+                        alert("Solo puedes seleccionar 4 Pokémon por equipo y por set.");
+                        return;
+                    }
+
+                    tarjeta.classList.add("seleccionado");
+                    campoKills.disabled = false;
+                    campoPokemon.disabled = false;
+                }
+
+                actualizarMarcadorSet(numeroSet, lado);
+            });
+
+            contenedor.appendChild(tarjeta);
+        });
+    })
+    .catch(error => {
+        console.error(error);
+        contenedor.innerHTML = "<p>Error al cargar los Pokémon.</p>";
+    });
+}
+
+function actualizarMarcadorSet(numeroSet, lado) {
+    const contenedorId = lado === "local"
+        ? "equipoLocalSet" + numeroSet
+        : "equipoVisitanteSet" + numeroSet;
+
+    const marcadorId = lado === "local"
+        ? "marcadorLocalSet" + numeroSet
+        : "marcadorVisitanteSet" + numeroSet;
+
+    const contenedor = document.getElementById(contenedorId);
+    let total = 0;
+
+    contenedor.querySelectorAll('input[type="number"]:not(:disabled)').forEach(input => {
+        total += parseInt(input.value, 10) || 0;
+    });
+
+    document.getElementById(marcadorId).textContent = total;
+}
 
 
 /*
@@ -737,6 +1027,10 @@ local.addEventListener(
             contadorLocal
         );
 
+        if (fase.value === "SF" || fase.value === "F") {
+    cargarEquiposSets();
+}
+
     }
 );
 
@@ -767,6 +1061,10 @@ visitante.addEventListener(
             contadorVisitante
         );
 
+        if (fase.value === "SF" || fase.value === "F") {
+    cargarEquiposSets();
+}
+
     }
 );
 
@@ -796,79 +1094,142 @@ function limpiarEquipos() {
  * Validación antes de guardar
  */
 
-document
-    .getElementById("formMembers")
-    .addEventListener(
-        "submit",
-        function (e) {
+document.getElementById("formMembers").addEventListener("submit", function (e) {
+    if (!temporada.value) {
+        e.preventDefault();
+        alert("Debes seleccionar una temporada.");
+        return;
+    }
 
+    if (!fase.value) {
+        e.preventDefault();
+        alert("Debes seleccionar una fase.");
+        return;
+    }
 
-            if (!temporada.value) {
+    if (fase.value === "L" && !jornada.value) {
+        e.preventDefault();
+        alert("Debes seleccionar una jornada para la fase liga.");
+        return;
+    }
 
-                e.preventDefault();
+    if (!local.value || !visitante.value || local.value === visitante.value) {
+        e.preventDefault();
+        alert("Debes seleccionar dos miembros diferentes.");
+        return;
+    }
 
-                alert(
-                    "Debes seleccionar una temporada."
-                );
+    // Validación para semifinales y final
+    if (fase.value === "SF" || fase.value === "F") {
+        const sets = [1, 2, 3];
+        let setsGanadosLocal = 0;
+        let setsGanadosVisitante = 0;
 
-                return;
+        for (const numeroSet of sets) {
+            const equipoL = document.getElementById("equipoLocalSet" + numeroSet);
+            const equipoV = document.getElementById("equipoVisitanteSet" + numeroSet);
 
+            const seleccionadosL = equipoL.querySelectorAll(
+                ".pokemon-member.seleccionado"
+            ).length;
+
+            const seleccionadosV = equipoV.querySelectorAll(
+                ".pokemon-member.seleccionado"
+            ).length;
+
+            const marcadorL = parseInt(
+                document.getElementById("marcadorLocalSet" + numeroSet).textContent,
+                10
+            ) || 0;
+
+            const marcadorV = parseInt(
+                document.getElementById("marcadorVisitanteSet" + numeroSet).textContent,
+                10
+            ) || 0;
+
+            // Si el tercer set está completamente vacío, se permite omitirlo.
+            if (numeroSet === 3 && seleccionadosL === 0 && seleccionadosV === 0) {
+                continue;
             }
-
-
-            if (!jornada.value) {
-
-                e.preventDefault();
-
-                alert(
-                    "Debes seleccionar una jornada."
-                );
-
-                return;
-
-            }
-
 
             if (
-                local.value ===
-                visitante.value
+                seleccionadosL < 1 || seleccionadosL > 4 ||
+                seleccionadosV < 1 || seleccionadosV > 4
             ) {
-
                 e.preventDefault();
-
-                alert(
-                    "El local y el visitante deben ser diferentes."
-                );
-
+                alert("En el Set " + numeroSet +
+                    " debes seleccionar entre 1 y 4 Pokémon por equipo.");
                 return;
-
             }
 
+            if (marcadorL === marcadorV) {
+                e.preventDefault();
+                alert("El Set " + numeroSet + " no puede terminar empatado.");
+                return;
+            }
 
-            const seleccionadosLocal =
-                pokemonLocal.querySelectorAll(
-                    ".pokemon-member.seleccionado"
-                ).length;
+            if (marcadorL > 4 || marcadorV > 4) {
+                e.preventDefault();
+                alert("En cada set, las kills de cada equipo no pueden superar 4.");
+                return;
+            }
 
+            if (marcadorL > marcadorV) {
+                setsGanadosLocal++;
+            } else {
+                setsGanadosVisitante++;
+            }
 
-            const seleccionadosVisitante =
-                pokemonVisitante.querySelectorAll(
-                    ".pokemon-member.seleccionado"
-                ).length;
+            // No se puede jugar otro set cuando alguien ya ha ganado dos.
+            if (setsGanadosLocal === 2 || setsGanadosVisitante === 2) {
+                if (numeroSet < 3) {
+                    const siguienteSet = numeroSet + 1;
+                    const equipoLSiguiente = document.getElementById("equipoLocalSet" + siguienteSet);
+                    const equipoVSiguiente = document.getElementById("equipoVisitanteSet" + siguienteSet);
 
-
-            if (seleccionadosLocal.length < 1 || seleccionadosLocal.length > 4) {
-    alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo local.");
-    return;
-}
-
-if (seleccionadosVisitante.length < 1 || seleccionadosVisitante.length > 4) {
-    alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo visitante.");
-    return;
-}
-
+                    if (
+                        equipoLSiguiente.querySelectorAll(".pokemon-member.seleccionado").length > 0 ||
+                        equipoVSiguiente.querySelectorAll(".pokemon-member.seleccionado").length > 0
+                    ) {
+                        e.preventDefault();
+                        alert("No puedes registrar más sets después de que un miembro haya ganado dos.");
+                        return;
+                    }
+                }
+                break;
+            }
         }
-    );
+
+        if (setsGanadosLocal < 2 && setsGanadosVisitante < 2) {
+            e.preventDefault();
+            alert("El enfrentamiento debe terminar con dos sets ganados. Rellena el Set 3 si hace falta.");
+            return;
+        }
+
+        return;
+    }
+
+    // Validación original para la fase de liga
+    const seleccionadosLocal = pokemonLocal.querySelectorAll(
+        ".pokemon-member.seleccionado"
+    ).length;
+
+    const seleccionadosVisitante = pokemonVisitante.querySelectorAll(
+        ".pokemon-member.seleccionado"
+    ).length;
+
+    if (seleccionadosLocal < 1 || seleccionadosLocal > 4) {
+        e.preventDefault();
+        alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo local.");
+        return;
+    }
+
+    if (seleccionadosVisitante < 1 || seleccionadosVisitante > 4) {
+        e.preventDefault();
+        alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo visitante.");
+        return;
+    }
+});
 
 async function cargarMiembrosTemporada() {
 

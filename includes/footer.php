@@ -59,7 +59,7 @@ if (!empty($filaActualizacion["fecha_actualizacion"])) {
     </p>
 
     <p>
-        Creado por
+        <strong>Versión Final 1.3 | </strong>Creado por
         <a href="https://discord.com/users/380751682356641793" target="_blank">
             Manufacturer
         </a>

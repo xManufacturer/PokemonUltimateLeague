@@ -14,7 +14,8 @@ $sql = "SELECT
             c.tipo,
             t.numero AS temporada,
             ct.jornadas,
-            ct.grupos
+            ct.grupos,
+            ct.sets_final
         FROM competiciones_temporadas ct
         JOIN competiciones c ON ct.competicion_id = c.id
         JOIN temporadas t ON ct.temporada_id = t.id
@@ -30,6 +31,26 @@ if ($competicion->num_rows === 0) {
 }
 
 $datos = $competicion->fetch_assoc();
+
+$idPlayoffsMembers = null;
+
+if ($datos["tipo"] == "members") {
+    $sqlPlayoffs = "SELECT sets_final
+                    FROM competiciones_temporadas
+                    WHERE id = ?
+                    LIMIT 1";
+
+    $stmtPlayoffs = $conn->prepare($sqlPlayoffs);
+    $stmtPlayoffs->bind_param("i", $id);
+    $stmtPlayoffs->execute();
+    $stmtPlayoffs->bind_result($setsFinal);
+
+    if ($stmtPlayoffs->fetch() && (int)$setsFinal > 0) {
+        $idPlayoffsMembers = $id;
+    }
+
+    $stmtPlayoffs->close();
+}
 
 // ============================================================
 // MEMBERS LEAGUE
@@ -50,8 +71,9 @@ if ($datos["tipo"] == "members") {
      */
 
     $sql = "SELECT MAX(jornada) AS ultima_jornada
-            FROM members_partidos
-            WHERE competicion_temporada_id = ?";
+        FROM members_partidos
+        WHERE competicion_temporada_id = ?
+        AND fase = 'L'";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
@@ -99,6 +121,7 @@ if ($datos["tipo"] == "members") {
 
                 WHERE mp.competicion_temporada_id = ?
                 AND mp.jornada = ?
+                AND mp.fase = 'L'
 
                 ORDER BY mp.id";
 
@@ -154,6 +177,7 @@ if ($datos["tipo"] == "members") {
                 ON mv.id = mp.visitante_id
 
             WHERE mp.competicion_temporada_id = ?
+            AND mp.fase = 'L'
 
             ORDER BY
                 mp.jornada ASC,
@@ -196,77 +220,57 @@ if ($datos["tipo"] == "members") {
      */
 
     $sql = "SELECT
-                mk.partido_id,
-                mk.miembro_id,
-                mk.pokemon_id,
-                mk.kills,
-                p.nombre AS pokemon
+            mpte.partido_id,
+            mpte.miembro_id,
+            p.id AS pokemon_id,
+            p.nombre AS pokemon,
+            COALESCE(mk.kills, 0) AS kills
 
-            FROM members_kills mk
+        FROM members_participantes mpte
 
-            INNER JOIN pokemon p
-                ON p.id = mk.pokemon_id
+        INNER JOIN members_partidos mp
+            ON mp.id = mpte.partido_id
 
-            INNER JOIN members_partidos mp
-                ON mp.id = mk.partido_id
+        INNER JOIN pokemon p
+            ON p.id = mpte.pokemon_id
 
-            WHERE mp.competicion_temporada_id = ?
-            AND mk.kills > 0
+        LEFT JOIN members_kills mk
+            ON mk.partido_id = mpte.partido_id
+            AND mk.miembro_id = mpte.miembro_id
+            AND mk.pokemon_id = mpte.pokemon_id
 
-            ORDER BY
-                mk.partido_id,
-                mk.miembro_id,
-                mk.kills DESC,
-                p.id ASC";
+        WHERE mp.competicion_temporada_id = ?
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
+        ORDER BY
+            mpte.partido_id ASC,
+            mpte.miembro_id ASC,
+            kills DESC,
+            p.id ASC";
 
-    $resultado =
-        $stmt->get_result();
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
 
-    while (
-        $kill =
-        $resultado->fetch_assoc()
-    ) {
+$resultado = $stmt->get_result();
 
-        $partidoId =
-            (int)$kill["partido_id"];
+while ($kill = $resultado->fetch_assoc()) {
 
-        $miembroId =
-            (int)$kill["miembro_id"];
+    $partidoId = (int)$kill["partido_id"];
+    $miembroId = (int)$kill["miembro_id"];
 
-        if (
-            !isset(
-                $killsPorPartidoMembers[$partidoId]
-            )
-        ) {
-
-            $killsPorPartidoMembers[$partidoId] = [];
-
-        }
-
-        if (
-            !isset(
-                $killsPorPartidoMembers[$partidoId][$miembroId]
-            )
-        ) {
-
-            $killsPorPartidoMembers[$partidoId][$miembroId] = [];
-
-        }
-
-        $killsPorPartidoMembers
-            [$partidoId]
-            [$miembroId][] = [
-                "pokemon" =>
-                    $kill["pokemon"],
-
-                "kills" =>
-                    (int)$kill["kills"]
-            ];
+    if (!isset($killsPorPartidoMembers[$partidoId])) {
+        $killsPorPartidoMembers[$partidoId] = [];
     }
+
+    if (!isset($killsPorPartidoMembers[$partidoId][$miembroId])) {
+        $killsPorPartidoMembers[$partidoId][$miembroId] = [];
+    }
+
+    $killsPorPartidoMembers[$partidoId][$miembroId][] = [
+        "pokemon" => $kill["pokemon"],
+        "kills" => (int)$kill["kills"]
+    ];
+}
 }
 
 /*
@@ -514,6 +518,19 @@ if ($resultadoSegunda->num_rows > 0) {
 
     <a href="temporada.php?id=<?php echo $idSegunda; ?>" class="tarjeta-segunda">
         Segunda División
+    </a>
+
+</div>
+
+<?php } ?>
+
+<?php if ($idPlayoffsMembers !== null) { ?>
+
+<div class="tarjetas">
+
+    <a href="competiciones/members_playoffs.php?id=<?php echo $idPlayoffsMembers; ?>"
+       class="tarjeta-segunda">
+        Playoffs
     </a>
 
 </div>
@@ -1593,9 +1610,16 @@ $unaColumna = ($totalParticipantes <= 10);
 
                 foreach ($clasificacionMembers as $fila) {
 
-                ?>
+    $clases = [];
 
-                    <tr>
+    // Solo colorear las posiciones 2 y 3
+    // de Members League temporada 2 (ID 22).
+    if ($id === 22 && $posicion >= 2 && $posicion <= 3) {
+        $clases[] = "champions";
+    }
+
+?>
+    <tr class="<?php echo implode(" ", $clases); ?>">
 
                         <td>
                             <strong>
@@ -1617,8 +1641,16 @@ $unaColumna = ($totalParticipantes <= 10);
                                 <?php } ?>
 
                                 <span>
-                                    <?php echo htmlspecialchars($fila["nombre"]); ?>
-                                </span>
+    <?php echo htmlspecialchars($fila["nombre"]); ?>
+</span>
+
+<?php if (!empty($fila["pais"])) { ?>
+    <img
+        src="img/banderas/<?php echo htmlspecialchars($fila["pais"], ENT_QUOTES, 'UTF-8'); ?>"
+        alt="Bandera de <?php echo htmlspecialchars($fila["nombre"], ENT_QUOTES, 'UTF-8'); ?>"
+        class="bandera-miembro"
+    >
+<?php } ?>
 
                             </div>
 
@@ -1678,14 +1710,31 @@ $unaColumna = ($totalParticipantes <= 10);
 
     </div>
 
+<?php if ($id === 22) { ?>
+
+    <div class="leyenda-clasificacion">
+
+        <div class="item-leyenda">
+            <span class="color-leyenda campeon"></span>
+            Final
+        </div>
+
+        <div class="item-leyenda">
+            <span class="color-leyenda champions"></span>
+            Semifinales
+        </div>
+
+    </div>
+
+<?php } ?>
+
 <?php } ?>
 
 <?php if ($datos["tipo"] == "members") { ?>
 
-    <br><h2>Kill Count</h2>
+    <br><h2>Poké Ball D'Or</h2>
 
-    <div class="clasificacion-contenedor">
-
+    <div class="clasificacion-contenedor clasificacion-members kill-count">
         <div class="clasificacion-columna">
 
             <table>
@@ -1751,9 +1800,7 @@ $unaColumna = ($totalParticipantes <= 10);
     </td>
 
     <td>
-        <strong>
             <?php echo $fila["combates"]; ?>
-        </strong>
     </td>
 
     <td>
@@ -1886,10 +1933,26 @@ $unaColumna = ($totalParticipantes <= 10);
 
                         <div class="members-kills-partido">
 
-                            <?php foreach (
-                                $killsPorPartidoMembers[$partidoId]
-                                as $miembroId => $kills
-                            ) { ?>
+                            <?php
+
+$ordenMiembros = [
+    (int)$partido["local_id"],
+    (int)$partido["visitante_id"]
+];
+
+foreach ($ordenMiembros as $miembroId) {
+
+    if (
+        !isset(
+            $killsPorPartidoMembers[$partidoId][$miembroId]
+        )
+    ) {
+        continue;
+    }
+
+    $kills = $killsPorPartidoMembers[$partidoId][$miembroId];
+
+?>
 
                                 <div class="members-kills-miembro">
 
@@ -1935,9 +1998,9 @@ $unaColumna = ($totalParticipantes <= 10);
                                         );
                                         ?>
 
-                                        (<?php
-                                        echo $kill["kills"];
-                                        ?>)
+                                        <?php if ($kill["kills"] > 0) { ?>
+    (<?php echo $kill["kills"]; ?>)
+<?php } ?>
 
                                     <?php } ?>
 

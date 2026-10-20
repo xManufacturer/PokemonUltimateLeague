@@ -828,18 +828,23 @@ function obtenerClasificacionMembers($conn, $competicion_temporada) {
      */
 
     $sql = "
-        SELECT
-            id,
-            nombre,
-            imagen
-        FROM members_miembros
-        ORDER BY id
-    ";
+    SELECT DISTINCT
+        m.id,
+        m.nombre,
+        m.imagen,
+        m.pais
+    FROM members_equipos e
+    INNER JOIN members_miembros m
+        ON m.id = e.miembro_id
+    WHERE e.competicion_temporada_id = ?
+    ORDER BY m.id
+";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $competicion_temporada);
+$stmt->execute();
 
-    $resultado = $stmt->get_result();
+$resultado = $stmt->get_result();
 
     while ($miembro = $resultado->fetch_assoc()) {
 
@@ -849,6 +854,7 @@ function obtenerClasificacionMembers($conn, $competicion_temporada) {
             "id" => $miembroId,
             "nombre" => $miembro["nombre"],
             "imagen" => $miembro["imagen"],
+            "pais" => $miembro["pais"],
 
             "pj" => 0,
             "pg" => 0,
@@ -879,6 +885,7 @@ function obtenerClasificacionMembers($conn, $competicion_temporada) {
             kills_visitante
         FROM members_partidos
         WHERE competicion_temporada_id = ?
+        AND fase = 'L'
         ORDER BY jornada ASC, id ASC
     ";
 
@@ -1053,6 +1060,7 @@ $sqlKillCount = "
     LEFT JOIN members_partidos mp
         ON mp.id = mpte.partido_id
         AND mp.competicion_temporada_id = e.competicion_temporada_id
+        AND fase = 'L'
 
     LEFT JOIN members_kills mk
         ON mk.partido_id = mp.id
@@ -1139,6 +1147,7 @@ function obtenerClasificacionHistoricaMembers($conn)
             e.competicion_temporada_id,
             m.nombre,
             m.imagen,
+            m.pais,
             t.numero AS temporada
         FROM members_equipos e
 
@@ -1174,6 +1183,7 @@ function obtenerClasificacionHistoricaMembers($conn)
                 "miembro_id" => $miembroId,
                 "nombre" => $fila["nombre"],
                 "imagen" => $fila["imagen"],
+                "pais" => $fila["pais"],
                 "temporadas" => 0,
                 "com" => 0,
                 "v" => 0,
@@ -1207,6 +1217,7 @@ function obtenerClasificacionHistoricaMembers($conn)
                 kills_visitante
             FROM members_partidos
             WHERE competicion_temporada_id = ?
+            AND fase = 'L'
             AND (
                 local_id = ?
                 OR visitante_id = ?
@@ -1403,6 +1414,7 @@ function obtenerClasificacionHistoricaMembers($conn)
         LEFT JOIN members_partidos mp
             ON mp.id = mpte.partido_id
             AND mp.competicion_temporada_id = e.competicion_temporada_id
+            AND mp.fase = 'L'
 
         LEFT JOIN members_kills mk
             ON mk.partido_id = mp.id
@@ -1424,6 +1436,7 @@ function obtenerClasificacionHistoricaMembers($conn)
 
         ORDER BY
             kills DESC,
+            combates ASC,
             p.id ASC
     ";
 

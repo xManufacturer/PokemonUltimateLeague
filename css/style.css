@@ -728,18 +728,7 @@ select,
     border-color: #666666;
 }
 
-.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(2) td {
-    background-color: #fff5b1;
-}
 
-.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(n+3):nth-child(-n+7) td:not(:first-child) {
-    background-color: #dbeeff;
-}
-
-.clasificacion-contenedor .clasificacion-columna:first-child tr:nth-child(2) td:first-child {
-    background-color: blue;
-    color: lightblue;
-}
 
 /* =========================================
    MEMBERS LEAGUE - REGISTRO DE COMBATE
@@ -781,8 +770,8 @@ select,
 }
 
 .pokemon-member img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border: blue;
     color:blue;
     object-fit: contain;
@@ -925,49 +914,44 @@ select,
 
 .clasificacion-contenedor.clasificacion-members
 .clasificacion-columna:first-child
+tr:nth-child(2)
+td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+
+/* ==========================================
+   MEMBERS HISTÓRICA
+   1.º amarillo + 2.º-6.º azul
+   ========================================== */
+
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
+tr:nth-child(2)
+td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
 tr:nth-child(n+3):nth-child(-n+7)
+td:not(:first-child) {
+    background-color: #dbeeff;
+}
+
+.clasificacion-contenedor.clasificacion-members.historica-members
+.clasificacion-columna:first-child
+tr:nth-child(n+8)
 td:not(:first-child) {
     background-color: transparent;
 }
 
+/* =========================================================
+   MEMBERS - CLASIFICACIÓN DE TEMPORADA
+   ========================================================= */
+
+/* 1º - amarillo */
 .clasificacion-contenedor.clasificacion-members
-.clasificacion-columna:first-child
-tr:nth-child(2) td:not(:first-child) {
-    background-color: #fff5b1;
-}
-
-/* ==========================================
-   MEMBERS HISTÓRICA
-   1.º amarillo + 2.º-6.º azul/rojo
-   ========================================== */
-
-/* 1.º Clasificado (Amarillo) */
-.clasificacion-contenedor.clasificacion-members.historica-members
-.clasificacion-columna:first-child
-tr:nth-child(2) td:not(:first-child) {
-    background-color: #fff5b1;
-}
-
-/* 2.º al 6.º Clasificado (Azul) */
-.clasificacion-contenedor.clasificacion-members.historica-members
-.clasificacion-columna:first-child
-tr:nth-child(n+3):nth-child(-n+7) td:not(:first-child) {
-    background-color: #dbeeff;
-}
-
-/* A partir del 7.º Clasificado (Transparente) */
-.clasificacion-contenedor.clasificacion-members.historica-members
-.clasificacion-columna:first-child
-tr:nth-child(n+8) td:not(:first-child) {
-    background-color: transparent;
-}
-
-/* ==========================================
-   HISTÓRICA LEGENDARY LEAGUE
-   ========================================== */
-
-/* 1.º puesto: amarillo excepto Pos */
-.historica-legendary
 .clasificacion-columna:first-child
 tr:nth-child(2)
 td:not(:first-child) {
@@ -975,19 +959,367 @@ td:not(:first-child) {
 }
 
 
-/* 2.º al 6.º: azul excepto Pos */
-.historica-legendary
+/* =========================================================
+   MEMBERS - KILL COUNT DE TEMPORADA
+   ========================================================= */
+
+/* 1.º - amarillo */
+.clasificacion-contenedor.clasificacion-members.kill-count
+.clasificacion-columna:first-child
+tr:nth-child(2)
+td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+/* 2.º al 6.º - azul claro */
+.clasificacion-contenedor.clasificacion-members.kill-count
 .clasificacion-columna:first-child
 tr:nth-child(n+3):nth-child(-n+7)
 td:not(:first-child) {
     background-color: #dbeeff;
 }
 
-
-/* Desde el 7.º: normal */
-.historica-legendary
+/* 7.º en adelante - normal */
+.clasificacion-contenedor.clasificacion-members.kill-count
 .clasificacion-columna:first-child
 tr:nth-child(n+8)
 td:not(:first-child) {
     background-color: transparent;
+}
+
+/* La columna Pos mantiene su azul */
+.clasificacion-contenedor.clasificacion-members.kill-count
+.clasificacion-columna:first-child
+tr td:first-child {
+    background-color: blue;
+    color: lightblue;
+}
+
+/* =========================================================
+   HISTÓRICA KANTO Y JOHTO
+   ========================================================= */
+
+/* 1.º - amarillo */
+.historica-liga .clasificacion-columna:first-child tr:nth-child(2) td:not(:first-child) {
+    background-color: #fff5b1;
+}
+
+/* 2.º al 6.º - azul claro */
+.historica-liga .clasificacion-columna:first-child tr:nth-child(n+3):nth-child(-n+7) td:not(:first-child) {
+    background-color: #dbeeff;
+}
+
+/* 7.º en adelante - normal */
+.historica-liga .clasificacion-columna:first-child tr:nth-child(n+8) td:not(:first-child) {
+    background-color: transparent;
+}
+
+/* =========================================
+   MEMBERS LEAGUE - CORRECCIONES DEL FORMULARIO
+   ========================================= */
+
+/* Forzar el color del texto en los bloques de Members */
+.members-contenedor,
+.members-contenedor *,
+.tarjeta-set,
+.tarjeta-set *,
+#contenedorSets,
+#contenedorSets * {
+    color: blue;
+}
+
+/* Mantener los títulos azules */
+.members-jugador h2,
+.tarjeta-set h3 {
+    color: blue;
+}
+
+/* Alinear correctamente los Pokémon del formulario clásico */
+.pokemon-member {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr) 55px;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    color: blue;
+}
+
+.pokemon-member img {
+    display: block;
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    justify-self: center;
+    border: 2px solid blue;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+/* Alinear los Pokémon de cada set */
+.pokemon-set {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pokemon-set img {
+    display: block;
+    flex: 0 0 60px;
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    margin: 0;
+    border: 2px solid blue;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.pokemon-set span {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: blue;
+}
+
+.pokemon-set .vida {
+    flex: 0 0 55px;
+    width: 55px;
+    height: 34px;
+    padding: 4px;
+    box-sizing: border-box;
+    text-align: center;
+    color: blue;
+    background-color: lightblue;
+    border: 2px solid blue;
+    border-radius: 6px;
+}
+
+/* Campos del formulario */
+.members-contenedor input,
+.members-contenedor select,
+.tarjeta-set input,
+.tarjeta-set select,
+#contenedorSets input,
+#contenedorSets select {
+    color: blue;
+    background-color: lightblue;
+    border: 2px solid blue;
+    box-sizing: border-box;
+}
+
+/* Texto de los nombres y contadores */
+.members-jugador,
+.members-jugador label,
+.tarjeta-set label,
+.contador {
+    color: blue;
+}
+
+/* Evitar que los campos deshabilitados parezcan negros */
+.tarjeta-set input:disabled,
+#contenedorSets input:disabled {
+    color: blue;
+    opacity: 1;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 700px) {
+    .members-contenedor {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+
+    .members-contenedor .resultado {
+        margin-top: 0;
+    }
+
+    #contenedorSets {
+        gap: 12px;
+        padding: 0 8px;
+        box-sizing: border-box;
+    }
+
+    .tarjeta-set {
+        width: 100%;
+        max-width: 320px;
+        box-sizing: border-box;
+    }
+}
+
+/* =========================================================
+   ESTILOS EXCLUSIVOS: MEMBERS (LIGA Y SETS)
+   Afecta SÓLO a las páginas de Members League
+   ========================================================= */
+
+/* 1. CENTRADO DEL CONTENEDOR PRINCIPAL DE ENFRENTAMIENTO */
+#contenedorSetsMembers .members-contenedor,
+.members-contenedor:has(.pokemon-member) {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 40px !important;
+    max-width: 850px !important;
+    margin: 25px auto !important;
+    box-sizing: border-box !important;
+}
+
+/* 2. ALINEACIÓN DEL MARCADOR EN LIGA REGULAR (0 - 0) */
+#contenedorSetsMembers .members-contenedor .resultado,
+.members-contenedor:has(.pokemon-member) .resultado {
+    margin-top: 15px !important;
+    align-self: flex-start !important;
+}
+
+/* 3. BLOQUE INDIVIDUAL DE CADA JUGADOR */
+#contenedorSetsMembers .members-jugador,
+.members-contenedor:has(.pokemon-member) .members-jugador {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: auto !important;
+}
+
+/* 4. FILA DE POKÉMON (FOTO 80px + NOMBRE + KILL BOX ALINEADA) */
+#contenedorSetsMembers .pokemon-member,
+.members-contenedor:has(.pokemon-member) .pokemon-member {
+    display: grid !important;
+    grid-template-columns: 80px 110px 60px !important; /* 80px Foto | 110px Nombre | 60px Input */
+    align-items: center !important;
+    gap: 10px !important;
+    width: 270px !important; /* Ancho fijo para que todas las filas midan lo mismo */
+    min-height: 86px !important;
+    padding: 3px 6px !important;
+    margin: 4px 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 5. TAMAÑO DE LA IMAGEN FIJO EN 80PX */
+#contenedorSetsMembers .pokemon-member img,
+.members-contenedor:has(.pokemon-member) .pokemon-member img {
+    width: 70px !important;
+    height: 70px !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    border: 2px solid blue !important;
+    border-radius: 10px !important;
+}
+
+/* 6. TEXTO DE NOMBRE */
+#contenedorSetsMembers .pokemon-member strong,
+#contenedorSetsMembers .pokemon-member span,
+.members-contenedor:has(.pokemon-member) .pokemon-member strong,
+.members-contenedor:has(.pokemon-member) .pokemon-member span {
+    text-align: left !important;
+    white-space: nowrap !important;
+    font-size: 14px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* 7. CAJA DE KILLS ESTILIZADA Y FIJA A LA DERECHA */
+#contenedorSetsMembers .pokemon-member input[type="number"],
+.members-contenedor:has(.pokemon-member) .pokemon-member input[type="number"] {
+    width: 60px !important;  /* Más ancha/larga */
+    height: 28px !important; /* Menos gorda/alta */
+    text-align: center !important;
+    font-size: 14px !important;
+    justify-self: end !important;
+    padding: 2px !important;
+    margin: 0 !important;
+    border: 2px solid blue !important;
+    background-color: lightblue !important;
+    color: blue !important;
+    border-radius: 4px !important;
+}
+
+/* 8. CONTENEDOR DE TARJETA DE SETS (FASE ELIMINATORIAS) */
+#contenedorSetsMembers .set-members,
+#contenedorSetsMembers .tarjeta-set {
+    max-width: 700px !important;
+    margin: 20px auto !important;
+    padding: 15px !important;
+    box-sizing: border-box !important;
+}
+
+.pokemon-clasificacion .bandera-miembro {
+    width: 50px;
+    height: 32px;
+    object-fit: fill;
+    vertical-align: middle;
+    margin-left: 4px;
+    border: 1px solid #b8b8b8;
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* =========================================================
+   MEMBERS LEAGUE - KILL COUNT HISTÓRICO
+   Entrenadores en horizontal y nombres en una línea
+   ========================================================= */
+
+.historica-liga table td .members-historico-lista {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.historica-liga table td .members-historico-miembro {
+    display: flex !important;
+    flex: 0 1 auto !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+}
+
+.historica-liga table td .members-historico-miembro img {
+    display: block !important;
+    width: 70px !important;
+    height: 70px !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    margin: 0 auto 4px !important;
+}
+
+.historica-liga table td .members-historico-miembro span {
+    display: block !important;
+    width: max-content !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    text-align: center !important;
+    font-size: 14px !important;
+}
+
+.clasificacion-members tr.champions > td {
+    background-color: #dbeeff !important;
+}
+
+.clasificacion-members tr.champions > td:first-child {
+    background-color: blue !important;
+    color: lightblue !important;
 }

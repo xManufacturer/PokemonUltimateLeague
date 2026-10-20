@@ -129,6 +129,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             <?php echo htmlspecialchars($fila["nombre"]); ?>
                         </span>
 
+                        <?php if (!empty($fila["pais"])) { ?>
+    <img
+        src="../img/banderas/<?php echo htmlspecialchars($fila["pais"], ENT_QUOTES, 'UTF-8'); ?>"
+        alt="Bandera de <?php echo htmlspecialchars($fila["nombre"], ENT_QUOTES, 'UTF-8'); ?>"
+        class="bandera-miembro"
+    >
+<?php } ?>
+
                     </div>
 
                 </td>
@@ -206,7 +214,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <h1>Kill Count histórico</h1>
 
-<div class="clasificacion-contenedor">
+<div class="clasificacion-contenedor historica-liga">
 
     <div class="clasificacion-columna">
 

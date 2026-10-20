@@ -66,7 +66,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <h1>Clasificación histórica</h1>
 
-<div class="clasificacion-contenedor historica-legendary">
+<div class="clasificacion-contenedor historica-liga">
 
     <div class="clasificacion-columna">
 
@@ -85,6 +85,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <th>PS+</th>
                 <th>PS-</th>
                 <th>Dif</th>
+                <th>P/C</th>
                 <th>Pts</th>
 
             </tr>
@@ -170,6 +171,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <?php echo $fila["diferencia"]; ?>
                     </strong>
                 </td>
+
+                <td>
+    <?php
+    echo $fila["com"] > 0
+        ? number_format($fila["puntos"] / $fila["com"], 2, ",", ".")
+        : "0,00";
+    ?>
+</td>
 
                 <td>
                     <strong>

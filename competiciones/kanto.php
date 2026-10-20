@@ -62,7 +62,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <h1>Clasificación histórica</h1>
 
-<div class="clasificacion-contenedor">
+<div class="clasificacion-contenedor historica-liga">
 
     <div class="clasificacion-columna">
 

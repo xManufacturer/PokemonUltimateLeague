@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: sql303.infinityfree.com
--- Tiempo de generación: 26-09-2026 a las 15:11:01
+-- Tiempo de generación: 18-10-2026 a las 05:55:43
 -- Versión del servidor: 11.4.13-MariaDB
 -- Versión de PHP: 7.2.22
 
@@ -78,7 +78,7 @@ INSERT INTO `competiciones` (`id`, `nombre`, `tipo`, `activa`, `visible`, `ruta`
 (14, 'Segunda Johto', 'segunda', 1, 0, 'johto_segunda.php', 'Johto'),
 (15, 'Promoción Kanto', 'promocion', 1, 0, 'kanto_promocion.php', 'Kanto'),
 (16, 'Promoción Johto', 'promocion', 1, 0, 'johto_promocion.php', 'Johto'),
-(17, 'Members League', 'members', 1, 0, 'members_league.php', NULL);
+(17, 'Members League', 'members', 0, 1, 'members_league.php', NULL);
 
 -- --------------------------------------------------------
 
@@ -112,7 +112,7 @@ INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, 
 (7, 11, 2, 3, 4, 2, 3, '2025-03-13 09:26:17', NULL),
 (8, 12, 2, 1, NULL, 1, NULL, '2025-03-27 16:02:02', NULL),
 (9, 1, 3, 19, NULL, 1, NULL, '2026-04-06 01:58:05', NULL),
-(10, 2, 3, 19, NULL, 1, NULL, '2026-09-11 00:04:28', NULL),
+(10, 2, 3, 19, NULL, 1, NULL, '2026-10-17 23:58:05', NULL),
 (11, 13, 3, NULL, NULL, 1, 1, '2026-05-15 09:19:23', 9),
 (12, 14, 3, NULL, NULL, 1, 1, NULL, 10),
 (13, 13, 1, NULL, NULL, 1, 1, '2023-09-15 03:25:07', 1),
@@ -123,7 +123,8 @@ INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, 
 (18, 15, 1, NULL, NULL, 3, 3, '2023-09-29 03:29:52', 13),
 (19, 15, 2, NULL, NULL, 3, 3, '2025-02-07 08:45:20', 14),
 (20, 16, 2, NULL, NULL, 3, 3, '2025-01-31 11:31:29', 15),
-(21, 17, 1, NULL, NULL, NULL, NULL, NULL, NULL);
+(21, 17, 1, 14, NULL, NULL, NULL, '2026-10-01 11:16:32', NULL),
+(22, 17, 2, 11, NULL, 1, 3, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -142,13 +143,24 @@ CREATE TABLE `members_equipos` (
 --
 
 INSERT INTO `members_equipos` (`id`, `competicion_temporada_id`, `miembro_id`) VALUES
-(1, 17, 1),
-(2, 17, 2),
-(3, 17, 3),
-(4, 17, 4),
-(5, 17, 5),
-(6, 17, 6),
-(7, 17, 7);
+(1, 21, 1),
+(2, 21, 2),
+(3, 21, 3),
+(4, 21, 4),
+(5, 21, 5),
+(6, 21, 6),
+(7, 21, 7),
+(8, 22, 1),
+(9, 22, 2),
+(10, 22, 3),
+(11, 22, 4),
+(12, 22, 5),
+(13, 22, 6),
+(14, 22, 7),
+(15, 22, 8),
+(16, 22, 9),
+(17, 22, 10),
+(18, 22, 11);
 
 -- --------------------------------------------------------
 
@@ -161,8 +173,333 @@ CREATE TABLE `members_kills` (
   `partido_id` int(11) NOT NULL,
   `miembro_id` int(11) NOT NULL,
   `pokemon_id` int(11) NOT NULL,
-  `kills` int(11) NOT NULL DEFAULT 0
+  `kills` int(11) NOT NULL DEFAULT 0,
+  `set_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `members_kills`
+--
+
+INSERT INTO `members_kills` (`id`, `partido_id`, `miembro_id`, `pokemon_id`, `kills`, `set_id`) VALUES
+(1, 1, 1, 3, 2, NULL),
+(2, 1, 1, 94, 1, NULL),
+(3, 1, 1, 24, 1, NULL),
+(4, 1, 2, 76, 0, NULL),
+(5, 1, 2, 113, 1, NULL),
+(6, 1, 2, 71, 0, NULL),
+(7, 1, 2, 99, 1, NULL),
+(8, 2, 4, 34, 1, NULL),
+(9, 2, 4, 134, 0, NULL),
+(10, 2, 4, 6, 0, NULL),
+(11, 2, 4, 9, 1, NULL),
+(12, 2, 3, 145, 3, NULL),
+(13, 2, 3, 62, 0, NULL),
+(14, 2, 3, 101, 0, NULL),
+(15, 2, 3, 51, 1, NULL),
+(16, 3, 5, 82, 0, NULL),
+(17, 3, 5, 89, 1, NULL),
+(18, 3, 5, 68, 2, NULL),
+(19, 3, 5, 59, 1, NULL),
+(20, 3, 6, 139, 1, NULL),
+(21, 3, 6, 47, 0, NULL),
+(22, 3, 6, 127, 1, NULL),
+(23, 3, 6, 91, 0, NULL),
+(24, 4, 4, 34, 1, NULL),
+(25, 4, 4, 134, 1, NULL),
+(26, 4, 4, 146, 2, NULL),
+(27, 4, 2, 76, 0, NULL),
+(28, 4, 2, 113, 0, NULL),
+(29, 4, 2, 71, 0, NULL),
+(30, 4, 2, 119, 0, NULL),
+(31, 5, 7, 107, 1, NULL),
+(32, 5, 7, 97, 0, NULL),
+(33, 5, 7, 143, 3, NULL),
+(34, 5, 5, 132, 0, NULL),
+(35, 5, 5, 68, 0, NULL),
+(36, 5, 5, 55, 0, NULL),
+(37, 5, 5, 59, 0, NULL),
+(38, 6, 6, 139, 0, NULL),
+(39, 6, 6, 47, 0, NULL),
+(40, 6, 6, 141, 0, NULL),
+(41, 6, 6, 91, 0, NULL),
+(42, 6, 1, 3, 2, NULL),
+(43, 6, 1, 94, 1, NULL),
+(44, 6, 1, 36, 1, NULL),
+(45, 7, 2, 76, 0, NULL),
+(46, 7, 2, 113, 0, NULL),
+(47, 7, 2, 71, 0, NULL),
+(48, 7, 2, 99, 0, NULL),
+(49, 7, 5, 82, 1, NULL),
+(50, 7, 5, 68, 0, NULL),
+(51, 7, 5, 55, 3, NULL),
+(52, 7, 5, 59, 0, NULL),
+(53, 8, 7, 97, 4, NULL),
+(54, 8, 7, 57, 0, NULL),
+(55, 8, 1, 3, 0, NULL),
+(56, 8, 1, 94, 0, NULL),
+(57, 8, 1, 12, 0, NULL),
+(58, 8, 1, 36, 0, NULL),
+(59, 9, 3, 145, 3, NULL),
+(60, 9, 3, 62, 0, NULL),
+(61, 9, 3, 51, 1, NULL),
+(62, 9, 6, 139, 0, NULL),
+(63, 9, 6, 127, 0, NULL),
+(64, 9, 6, 141, 0, NULL),
+(65, 9, 6, 91, 1, NULL),
+(66, 10, 5, 82, 0, NULL),
+(67, 10, 5, 68, 0, NULL),
+(68, 10, 5, 55, 0, NULL),
+(69, 10, 5, 59, 1, NULL),
+(70, 10, 3, 145, 0, NULL),
+(71, 10, 3, 62, 1, NULL),
+(72, 10, 3, 51, 2, NULL),
+(73, 10, 3, 53, 1, NULL),
+(74, 11, 2, 76, 1, NULL),
+(75, 11, 2, 113, 0, NULL),
+(76, 11, 2, 71, 1, NULL),
+(77, 11, 2, 114, 0, NULL),
+(78, 11, 7, 20, 1, NULL),
+(79, 11, 7, 97, 0, NULL),
+(80, 11, 7, 143, 3, NULL),
+(81, 11, 7, 45, 0, NULL),
+(82, 12, 1, 3, 0, NULL),
+(83, 12, 1, 94, 2, NULL),
+(84, 12, 1, 49, 1, NULL),
+(85, 12, 1, 36, 0, NULL),
+(86, 12, 4, 34, 1, NULL),
+(87, 12, 4, 134, 1, NULL),
+(88, 12, 4, 146, 1, NULL),
+(89, 12, 4, 6, 1, NULL),
+(90, 13, 7, 20, 0, NULL),
+(91, 13, 7, 97, 0, NULL),
+(92, 13, 7, 57, 1, NULL),
+(93, 13, 7, 143, 0, NULL),
+(94, 13, 4, 34, 3, NULL),
+(95, 13, 4, 134, 0, NULL),
+(96, 13, 4, 146, 0, NULL),
+(97, 13, 4, 6, 1, NULL),
+(98, 14, 1, 3, 1, NULL),
+(99, 14, 1, 94, 3, NULL),
+(100, 14, 1, 49, 0, NULL),
+(101, 14, 1, 36, 0, NULL),
+(102, 14, 3, 145, 2, NULL),
+(103, 14, 3, 62, 0, NULL),
+(104, 14, 3, 51, 1, NULL),
+(105, 14, 3, 42, 0, NULL),
+(106, 15, 6, 139, 0, NULL),
+(107, 15, 6, 47, 0, NULL),
+(108, 15, 6, 127, 2, NULL),
+(109, 15, 6, 91, 1, NULL),
+(110, 15, 2, 113, 4, NULL),
+(111, 15, 2, 71, 0, NULL),
+(112, 15, 2, 114, 0, NULL),
+(113, 15, 2, 119, 0, NULL),
+(114, 16, 5, 82, 0, NULL),
+(115, 16, 5, 68, 0, NULL),
+(116, 16, 5, 55, 0, NULL),
+(117, 16, 5, 59, 0, NULL),
+(118, 16, 4, 34, 1, NULL),
+(119, 16, 4, 134, 2, NULL),
+(120, 16, 4, 136, 0, NULL),
+(121, 16, 4, 9, 1, NULL),
+(122, 17, 7, 97, 1, NULL),
+(123, 17, 7, 143, 0, NULL),
+(124, 17, 7, 45, 3, NULL),
+(125, 17, 6, 139, 0, NULL),
+(126, 17, 6, 47, 0, NULL),
+(127, 17, 6, 127, 0, NULL),
+(128, 17, 6, 91, 1, NULL),
+(129, 18, 2, 76, 1, NULL),
+(130, 18, 2, 113, 0, NULL),
+(131, 18, 2, 71, 0, NULL),
+(132, 18, 2, 114, 0, NULL),
+(133, 18, 3, 145, 1, NULL),
+(134, 18, 3, 62, 1, NULL),
+(135, 18, 3, 53, 2, NULL),
+(136, 19, 5, 82, 0, NULL),
+(137, 19, 5, 68, 0, NULL),
+(138, 19, 5, 55, 0, NULL),
+(139, 19, 5, 59, 1, NULL),
+(140, 19, 1, 94, 1, NULL),
+(141, 19, 1, 24, 1, NULL),
+(142, 19, 1, 36, 2, NULL),
+(143, 20, 4, 34, 2, NULL),
+(144, 20, 4, 134, 0, NULL),
+(145, 20, 4, 6, 2, NULL),
+(146, 20, 4, 9, 0, NULL),
+(147, 20, 6, 139, 1, NULL),
+(148, 20, 6, 127, 0, NULL),
+(149, 20, 6, 83, 0, NULL),
+(150, 20, 6, 91, 0, NULL),
+(151, 21, 7, 20, 0, NULL),
+(152, 21, 7, 97, 2, NULL),
+(153, 21, 7, 57, 1, NULL),
+(154, 21, 7, 143, 0, NULL),
+(155, 21, 3, 145, 2, NULL),
+(156, 21, 3, 62, 1, NULL),
+(157, 21, 3, 101, 0, NULL),
+(158, 21, 3, 53, 1, NULL),
+(159, 22, 4, 121, 0, NULL),
+(160, 22, 4, 34, 1, NULL),
+(161, 22, 4, 134, 0, NULL),
+(162, 22, 4, 9, 3, NULL),
+(163, 22, 3, 145, 1, NULL),
+(164, 22, 3, 62, 0, NULL),
+(165, 22, 3, 101, 0, NULL),
+(166, 22, 3, 51, 0, NULL),
+(167, 23, 5, 18, 1, NULL),
+(168, 23, 5, 82, 0, NULL),
+(169, 23, 5, 68, 2, NULL),
+(170, 23, 5, 59, 0, NULL),
+(171, 23, 6, 125, 0, NULL),
+(172, 23, 6, 139, 3, NULL),
+(173, 23, 6, 127, 0, NULL),
+(174, 23, 6, 91, 1, NULL),
+(175, 24, 1, 94, 1, NULL),
+(176, 24, 1, 49, 0, NULL),
+(177, 24, 1, 36, 0, NULL),
+(178, 24, 2, 126, 1, NULL),
+(179, 24, 2, 76, 0, NULL),
+(180, 24, 2, 113, 3, NULL),
+(181, 24, 2, 71, 0, NULL),
+(182, 25, 5, 18, 0, NULL),
+(183, 25, 5, 82, 0, NULL),
+(184, 25, 5, 68, 0, NULL),
+(185, 25, 5, 59, 0, NULL),
+(186, 25, 7, 97, 1, NULL),
+(187, 25, 7, 143, 3, NULL),
+(188, 26, 6, 125, 3, NULL),
+(189, 26, 6, 139, 0, NULL),
+(190, 26, 6, 127, 1, NULL),
+(191, 26, 6, 91, 0, NULL),
+(192, 26, 1, 78, 0, NULL),
+(193, 26, 1, 3, 1, NULL),
+(194, 26, 1, 94, 1, NULL),
+(195, 26, 1, 49, 0, NULL),
+(196, 27, 4, 121, 0, NULL),
+(197, 27, 4, 34, 1, NULL),
+(198, 27, 4, 146, 0, NULL),
+(199, 27, 4, 6, 1, NULL),
+(200, 27, 2, 76, 0, NULL),
+(201, 27, 2, 113, 2, NULL),
+(202, 27, 2, 71, 0, NULL),
+(203, 27, 2, 119, 2, NULL),
+(204, 28, 5, 82, 1, NULL),
+(205, 28, 5, 68, 1, NULL),
+(206, 28, 5, 55, 0, NULL),
+(207, 28, 5, 59, 0, NULL),
+(208, 28, 2, 126, 0, NULL),
+(209, 28, 2, 76, 1, NULL),
+(210, 28, 2, 113, 3, NULL),
+(211, 28, 2, 119, 0, NULL),
+(212, 29, 7, 131, 0, NULL),
+(213, 29, 7, 97, 2, NULL),
+(214, 29, 7, 57, 1, NULL),
+(215, 29, 7, 143, 1, NULL),
+(216, 29, 1, 78, 0, NULL),
+(217, 29, 1, 3, 1, NULL),
+(218, 29, 1, 94, 1, NULL),
+(219, 29, 1, 36, 1, NULL),
+(220, 30, 3, 145, 3, NULL),
+(221, 30, 3, 62, 0, NULL),
+(222, 30, 3, 51, 1, NULL),
+(223, 30, 6, 125, 1, NULL),
+(224, 30, 6, 139, 1, NULL),
+(225, 30, 6, 47, 0, NULL),
+(226, 30, 6, 91, 0, NULL),
+(227, 31, 1, 3, 1, NULL),
+(228, 31, 1, 94, 0, NULL),
+(229, 31, 1, 49, 1, NULL),
+(230, 31, 1, 36, 1, NULL),
+(231, 31, 4, 121, 2, NULL),
+(232, 31, 4, 34, 2, NULL),
+(233, 31, 4, 134, 0, NULL),
+(234, 31, 4, 146, 0, NULL),
+(235, 32, 5, 82, 0, NULL),
+(236, 32, 5, 89, 0, NULL),
+(237, 32, 5, 68, 0, NULL),
+(238, 32, 5, 55, 1, NULL),
+(239, 32, 3, 122, 1, NULL),
+(240, 32, 3, 145, 1, NULL),
+(241, 32, 3, 62, 0, NULL),
+(242, 32, 3, 51, 2, NULL),
+(243, 33, 7, 131, 0, NULL),
+(244, 33, 7, 57, 1, NULL),
+(245, 33, 7, 143, 1, NULL),
+(246, 33, 7, 45, 0, NULL),
+(247, 33, 2, 126, 0, NULL),
+(248, 33, 2, 76, 1, NULL),
+(249, 33, 2, 113, 0, NULL),
+(250, 33, 2, 71, 0, NULL),
+(251, 34, 2, 126, 1, NULL),
+(252, 34, 2, 113, 0, NULL),
+(253, 34, 2, 71, 3, NULL),
+(254, 34, 2, 114, 0, NULL),
+(255, 34, 6, 125, 0, NULL),
+(256, 34, 6, 139, 1, NULL),
+(257, 34, 6, 141, 0, NULL),
+(258, 34, 6, 91, 1, NULL),
+(259, 35, 1, 3, 2, NULL),
+(260, 35, 1, 94, 1, NULL),
+(261, 35, 1, 49, 0, NULL),
+(262, 35, 1, 36, 1, NULL),
+(263, 35, 3, 122, 1, NULL),
+(264, 35, 3, 145, 1, NULL),
+(265, 35, 3, 62, 0, NULL),
+(266, 35, 3, 51, 1, NULL),
+(267, 36, 7, 131, 3, NULL),
+(268, 36, 7, 20, 1, NULL),
+(269, 36, 4, 121, 0, NULL),
+(270, 36, 4, 34, 1, NULL),
+(271, 36, 4, 134, 0, NULL),
+(272, 36, 4, 6, 0, NULL),
+(273, 37, 2, 126, 1, NULL),
+(274, 37, 2, 76, 0, NULL),
+(275, 37, 2, 113, 0, NULL),
+(276, 37, 2, 71, 0, NULL),
+(277, 37, 3, 122, 0, NULL),
+(278, 37, 3, 145, 3, NULL),
+(279, 37, 3, 62, 0, NULL),
+(280, 37, 3, 53, 1, NULL),
+(281, 38, 4, 121, 0, NULL),
+(282, 38, 4, 34, 3, NULL),
+(283, 38, 4, 9, 1, NULL),
+(284, 38, 5, 82, 0, NULL),
+(285, 38, 5, 89, 0, NULL),
+(286, 38, 5, 68, 0, NULL),
+(287, 38, 5, 55, 0, NULL),
+(288, 39, 6, 125, 0, NULL),
+(289, 39, 6, 139, 1, NULL),
+(290, 39, 6, 127, 0, NULL),
+(291, 39, 6, 91, 2, NULL),
+(292, 39, 7, 97, 0, NULL),
+(293, 39, 7, 57, 4, NULL),
+(294, 39, 7, 143, 0, NULL),
+(295, 39, 7, 45, 0, NULL),
+(296, 40, 5, 82, 0, NULL),
+(297, 40, 5, 89, 0, NULL),
+(298, 40, 5, 68, 2, NULL),
+(299, 40, 5, 55, 0, NULL),
+(300, 40, 1, 94, 2, NULL),
+(301, 40, 1, 24, 0, NULL),
+(302, 40, 1, 36, 2, NULL),
+(303, 41, 4, 121, 1, NULL),
+(304, 41, 4, 34, 3, NULL),
+(305, 41, 4, 146, 0, NULL),
+(306, 41, 4, 9, 0, NULL),
+(307, 41, 6, 125, 0, NULL),
+(308, 41, 6, 139, 0, NULL),
+(309, 41, 6, 127, 1, NULL),
+(310, 41, 6, 91, 0, NULL),
+(311, 42, 7, 131, 1, NULL),
+(312, 42, 7, 97, 2, NULL),
+(313, 42, 7, 57, 1, NULL),
+(314, 42, 7, 143, 0, NULL),
+(315, 42, 3, 122, 0, NULL),
+(316, 42, 3, 145, 1, NULL),
+(317, 42, 3, 62, 0, NULL),
+(318, 42, 3, 53, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -173,21 +510,26 @@ CREATE TABLE `members_kills` (
 CREATE TABLE `members_miembros` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
-  `imagen` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL
+  `imagen` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `pais` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `members_miembros`
 --
 
-INSERT INTO `members_miembros` (`id`, `nombre`, `imagen`) VALUES
-(1, 'Er_Feyd', 'er_feyd.png'),
-(2, 'Honrey', 'honrey.png'),
-(3, 'Lunaparka', 'lunaparka.png'),
-(4, 'Estrac', 'estrac.png'),
-(5, 'ElAguDBP', 'elagudbp.png'),
-(6, 'SergioLC17', 'sergiolc17.png'),
-(7, 'Fender', 'fender.png');
+INSERT INTO `members_miembros` (`id`, `nombre`, `imagen`, `pais`) VALUES
+(1, 'Er_Feyd', 'er_feyd.png', 'chile.png'),
+(2, 'Honrey', 'honrey.png', 'argentina.png'),
+(3, 'Lunaparka', 'lunaparka.png', 'argentina.png'),
+(4, 'Estrac', 'estrac.png', 'chile.png'),
+(5, 'ElAguDBP', 'elagudbp.png', 'argentina.png'),
+(6, 'SergioLC17', 'sergiolc17.png', 'argentina.png'),
+(7, 'Fender', 'fender.png', 'argentina.png'),
+(8, 'Manufacturer', 'manufacturer.png', 'españa.png'),
+(9, 'Munarri', 'munarri.png', 'españa.png'),
+(10, 'Raevico', 'raevico.png', 'españa.png'),
+(11, 'MrTarness', 'mrtarness.png', 'peru.png');
 
 -- --------------------------------------------------------
 
@@ -199,8 +541,333 @@ CREATE TABLE `members_participantes` (
   `id` int(11) NOT NULL,
   `partido_id` int(11) NOT NULL,
   `miembro_id` int(11) NOT NULL,
-  `pokemon_id` int(11) NOT NULL
+  `pokemon_id` int(11) NOT NULL,
+  `set_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `members_participantes`
+--
+
+INSERT INTO `members_participantes` (`id`, `partido_id`, `miembro_id`, `pokemon_id`, `set_id`) VALUES
+(1, 1, 1, 3, NULL),
+(3, 1, 1, 24, NULL),
+(2, 1, 1, 94, NULL),
+(6, 1, 2, 71, NULL),
+(4, 1, 2, 76, NULL),
+(7, 1, 2, 99, NULL),
+(5, 1, 2, 113, NULL),
+(15, 2, 3, 51, NULL),
+(13, 2, 3, 62, NULL),
+(14, 2, 3, 101, NULL),
+(12, 2, 3, 145, NULL),
+(10, 2, 4, 6, NULL),
+(11, 2, 4, 9, NULL),
+(8, 2, 4, 34, NULL),
+(9, 2, 4, 134, NULL),
+(19, 3, 5, 59, NULL),
+(18, 3, 5, 68, NULL),
+(16, 3, 5, 82, NULL),
+(17, 3, 5, 89, NULL),
+(21, 3, 6, 47, NULL),
+(23, 3, 6, 91, NULL),
+(22, 3, 6, 127, NULL),
+(20, 3, 6, 139, NULL),
+(29, 4, 2, 71, NULL),
+(27, 4, 2, 76, NULL),
+(28, 4, 2, 113, NULL),
+(30, 4, 2, 119, NULL),
+(24, 4, 4, 34, NULL),
+(25, 4, 4, 134, NULL),
+(26, 4, 4, 146, NULL),
+(36, 5, 5, 55, NULL),
+(37, 5, 5, 59, NULL),
+(35, 5, 5, 68, NULL),
+(34, 5, 5, 132, NULL),
+(32, 5, 7, 97, NULL),
+(31, 5, 7, 107, NULL),
+(33, 5, 7, 143, NULL),
+(42, 6, 1, 3, NULL),
+(44, 6, 1, 36, NULL),
+(43, 6, 1, 94, NULL),
+(39, 6, 6, 47, NULL),
+(41, 6, 6, 91, NULL),
+(38, 6, 6, 139, NULL),
+(40, 6, 6, 141, NULL),
+(47, 7, 2, 71, NULL),
+(45, 7, 2, 76, NULL),
+(48, 7, 2, 99, NULL),
+(46, 7, 2, 113, NULL),
+(51, 7, 5, 55, NULL),
+(52, 7, 5, 59, NULL),
+(50, 7, 5, 68, NULL),
+(49, 7, 5, 82, NULL),
+(55, 8, 1, 3, NULL),
+(57, 8, 1, 12, NULL),
+(58, 8, 1, 36, NULL),
+(56, 8, 1, 94, NULL),
+(54, 8, 7, 57, NULL),
+(53, 8, 7, 97, NULL),
+(61, 9, 3, 51, NULL),
+(60, 9, 3, 62, NULL),
+(59, 9, 3, 145, NULL),
+(65, 9, 6, 91, NULL),
+(63, 9, 6, 127, NULL),
+(62, 9, 6, 139, NULL),
+(64, 9, 6, 141, NULL),
+(72, 10, 3, 51, NULL),
+(73, 10, 3, 53, NULL),
+(71, 10, 3, 62, NULL),
+(70, 10, 3, 145, NULL),
+(68, 10, 5, 55, NULL),
+(69, 10, 5, 59, NULL),
+(67, 10, 5, 68, NULL),
+(66, 10, 5, 82, NULL),
+(76, 11, 2, 71, NULL),
+(74, 11, 2, 76, NULL),
+(75, 11, 2, 113, NULL),
+(77, 11, 2, 114, NULL),
+(78, 11, 7, 20, NULL),
+(81, 11, 7, 45, NULL),
+(79, 11, 7, 97, NULL),
+(80, 11, 7, 143, NULL),
+(82, 12, 1, 3, NULL),
+(85, 12, 1, 36, NULL),
+(84, 12, 1, 49, NULL),
+(83, 12, 1, 94, NULL),
+(89, 12, 4, 6, NULL),
+(86, 12, 4, 34, NULL),
+(87, 12, 4, 134, NULL),
+(88, 12, 4, 146, NULL),
+(97, 13, 4, 6, NULL),
+(94, 13, 4, 34, NULL),
+(95, 13, 4, 134, NULL),
+(96, 13, 4, 146, NULL),
+(90, 13, 7, 20, NULL),
+(92, 13, 7, 57, NULL),
+(91, 13, 7, 97, NULL),
+(93, 13, 7, 143, NULL),
+(98, 14, 1, 3, NULL),
+(101, 14, 1, 36, NULL),
+(100, 14, 1, 49, NULL),
+(99, 14, 1, 94, NULL),
+(105, 14, 3, 42, NULL),
+(104, 14, 3, 51, NULL),
+(103, 14, 3, 62, NULL),
+(102, 14, 3, 145, NULL),
+(111, 15, 2, 71, NULL),
+(110, 15, 2, 113, NULL),
+(112, 15, 2, 114, NULL),
+(113, 15, 2, 119, NULL),
+(107, 15, 6, 47, NULL),
+(109, 15, 6, 91, NULL),
+(108, 15, 6, 127, NULL),
+(106, 15, 6, 139, NULL),
+(121, 16, 4, 9, NULL),
+(118, 16, 4, 34, NULL),
+(119, 16, 4, 134, NULL),
+(120, 16, 4, 136, NULL),
+(116, 16, 5, 55, NULL),
+(117, 16, 5, 59, NULL),
+(115, 16, 5, 68, NULL),
+(114, 16, 5, 82, NULL),
+(126, 17, 6, 47, NULL),
+(128, 17, 6, 91, NULL),
+(127, 17, 6, 127, NULL),
+(125, 17, 6, 139, NULL),
+(124, 17, 7, 45, NULL),
+(122, 17, 7, 97, NULL),
+(123, 17, 7, 143, NULL),
+(131, 18, 2, 71, NULL),
+(129, 18, 2, 76, NULL),
+(130, 18, 2, 113, NULL),
+(132, 18, 2, 114, NULL),
+(135, 18, 3, 53, NULL),
+(134, 18, 3, 62, NULL),
+(133, 18, 3, 145, NULL),
+(141, 19, 1, 24, NULL),
+(142, 19, 1, 36, NULL),
+(140, 19, 1, 94, NULL),
+(138, 19, 5, 55, NULL),
+(139, 19, 5, 59, NULL),
+(137, 19, 5, 68, NULL),
+(136, 19, 5, 82, NULL),
+(145, 20, 4, 6, NULL),
+(146, 20, 4, 9, NULL),
+(143, 20, 4, 34, NULL),
+(144, 20, 4, 134, NULL),
+(149, 20, 6, 83, NULL),
+(150, 20, 6, 91, NULL),
+(148, 20, 6, 127, NULL),
+(147, 20, 6, 139, NULL),
+(158, 21, 3, 53, NULL),
+(156, 21, 3, 62, NULL),
+(157, 21, 3, 101, NULL),
+(155, 21, 3, 145, NULL),
+(151, 21, 7, 20, NULL),
+(153, 21, 7, 57, NULL),
+(152, 21, 7, 97, NULL),
+(154, 21, 7, 143, NULL),
+(166, 22, 3, 51, NULL),
+(164, 22, 3, 62, NULL),
+(165, 22, 3, 101, NULL),
+(163, 22, 3, 145, NULL),
+(162, 22, 4, 9, NULL),
+(160, 22, 4, 34, NULL),
+(159, 22, 4, 121, NULL),
+(161, 22, 4, 134, NULL),
+(167, 23, 5, 18, NULL),
+(170, 23, 5, 59, NULL),
+(169, 23, 5, 68, NULL),
+(168, 23, 5, 82, NULL),
+(174, 23, 6, 91, NULL),
+(171, 23, 6, 125, NULL),
+(173, 23, 6, 127, NULL),
+(172, 23, 6, 139, NULL),
+(177, 24, 1, 36, NULL),
+(176, 24, 1, 49, NULL),
+(175, 24, 1, 94, NULL),
+(181, 24, 2, 71, NULL),
+(179, 24, 2, 76, NULL),
+(180, 24, 2, 113, NULL),
+(178, 24, 2, 126, NULL),
+(182, 25, 5, 18, NULL),
+(185, 25, 5, 59, NULL),
+(184, 25, 5, 68, NULL),
+(183, 25, 5, 82, NULL),
+(186, 25, 7, 97, NULL),
+(187, 25, 7, 143, NULL),
+(193, 26, 1, 3, NULL),
+(195, 26, 1, 49, NULL),
+(192, 26, 1, 78, NULL),
+(194, 26, 1, 94, NULL),
+(191, 26, 6, 91, NULL),
+(188, 26, 6, 125, NULL),
+(190, 26, 6, 127, NULL),
+(189, 26, 6, 139, NULL),
+(202, 27, 2, 71, NULL),
+(200, 27, 2, 76, NULL),
+(201, 27, 2, 113, NULL),
+(203, 27, 2, 119, NULL),
+(199, 27, 4, 6, NULL),
+(197, 27, 4, 34, NULL),
+(196, 27, 4, 121, NULL),
+(198, 27, 4, 146, NULL),
+(209, 28, 2, 76, NULL),
+(210, 28, 2, 113, NULL),
+(211, 28, 2, 119, NULL),
+(208, 28, 2, 126, NULL),
+(206, 28, 5, 55, NULL),
+(207, 28, 5, 59, NULL),
+(205, 28, 5, 68, NULL),
+(204, 28, 5, 82, NULL),
+(217, 29, 1, 3, NULL),
+(219, 29, 1, 36, NULL),
+(216, 29, 1, 78, NULL),
+(218, 29, 1, 94, NULL),
+(214, 29, 7, 57, NULL),
+(213, 29, 7, 97, NULL),
+(212, 29, 7, 131, NULL),
+(215, 29, 7, 143, NULL),
+(222, 30, 3, 51, NULL),
+(221, 30, 3, 62, NULL),
+(220, 30, 3, 145, NULL),
+(225, 30, 6, 47, NULL),
+(226, 30, 6, 91, NULL),
+(223, 30, 6, 125, NULL),
+(224, 30, 6, 139, NULL),
+(227, 31, 1, 3, NULL),
+(230, 31, 1, 36, NULL),
+(229, 31, 1, 49, NULL),
+(228, 31, 1, 94, NULL),
+(232, 31, 4, 34, NULL),
+(231, 31, 4, 121, NULL),
+(233, 31, 4, 134, NULL),
+(234, 31, 4, 146, NULL),
+(242, 32, 3, 51, NULL),
+(241, 32, 3, 62, NULL),
+(239, 32, 3, 122, NULL),
+(240, 32, 3, 145, NULL),
+(238, 32, 5, 55, NULL),
+(237, 32, 5, 68, NULL),
+(235, 32, 5, 82, NULL),
+(236, 32, 5, 89, NULL),
+(250, 33, 2, 71, NULL),
+(248, 33, 2, 76, NULL),
+(249, 33, 2, 113, NULL),
+(247, 33, 2, 126, NULL),
+(246, 33, 7, 45, NULL),
+(244, 33, 7, 57, NULL),
+(243, 33, 7, 131, NULL),
+(245, 33, 7, 143, NULL),
+(253, 34, 2, 71, NULL),
+(252, 34, 2, 113, NULL),
+(254, 34, 2, 114, NULL),
+(251, 34, 2, 126, NULL),
+(258, 34, 6, 91, NULL),
+(255, 34, 6, 125, NULL),
+(256, 34, 6, 139, NULL),
+(257, 34, 6, 141, NULL),
+(259, 35, 1, 3, NULL),
+(262, 35, 1, 36, NULL),
+(261, 35, 1, 49, NULL),
+(260, 35, 1, 94, NULL),
+(266, 35, 3, 51, NULL),
+(265, 35, 3, 62, NULL),
+(263, 35, 3, 122, NULL),
+(264, 35, 3, 145, NULL),
+(272, 36, 4, 6, NULL),
+(270, 36, 4, 34, NULL),
+(269, 36, 4, 121, NULL),
+(271, 36, 4, 134, NULL),
+(268, 36, 7, 20, NULL),
+(267, 36, 7, 131, NULL),
+(276, 37, 2, 71, NULL),
+(274, 37, 2, 76, NULL),
+(275, 37, 2, 113, NULL),
+(273, 37, 2, 126, NULL),
+(280, 37, 3, 53, NULL),
+(279, 37, 3, 62, NULL),
+(277, 37, 3, 122, NULL),
+(278, 37, 3, 145, NULL),
+(283, 38, 4, 9, NULL),
+(282, 38, 4, 34, NULL),
+(281, 38, 4, 121, NULL),
+(287, 38, 5, 55, NULL),
+(286, 38, 5, 68, NULL),
+(284, 38, 5, 82, NULL),
+(285, 38, 5, 89, NULL),
+(291, 39, 6, 91, NULL),
+(288, 39, 6, 125, NULL),
+(290, 39, 6, 127, NULL),
+(289, 39, 6, 139, NULL),
+(295, 39, 7, 45, NULL),
+(293, 39, 7, 57, NULL),
+(292, 39, 7, 97, NULL),
+(294, 39, 7, 143, NULL),
+(301, 40, 1, 24, NULL),
+(302, 40, 1, 36, NULL),
+(300, 40, 1, 94, NULL),
+(299, 40, 5, 55, NULL),
+(298, 40, 5, 68, NULL),
+(296, 40, 5, 82, NULL),
+(297, 40, 5, 89, NULL),
+(306, 41, 4, 9, NULL),
+(304, 41, 4, 34, NULL),
+(303, 41, 4, 121, NULL),
+(305, 41, 4, 146, NULL),
+(310, 41, 6, 91, NULL),
+(307, 41, 6, 125, NULL),
+(309, 41, 6, 127, NULL),
+(308, 41, 6, 139, NULL),
+(318, 42, 3, 53, NULL),
+(317, 42, 3, 62, NULL),
+(315, 42, 3, 122, NULL),
+(316, 42, 3, 145, NULL),
+(313, 42, 7, 57, NULL),
+(312, 42, 7, 97, NULL),
+(311, 42, 7, 131, NULL),
+(314, 42, 7, 143, NULL);
 
 -- --------------------------------------------------------
 
@@ -211,12 +878,61 @@ CREATE TABLE `members_participantes` (
 CREATE TABLE `members_partidos` (
   `id` int(11) NOT NULL,
   `competicion_temporada_id` int(11) NOT NULL,
-  `jornada` int(11) NOT NULL,
+  `jornada` int(11) DEFAULT NULL,
   `local_id` int(11) NOT NULL,
   `visitante_id` int(11) NOT NULL,
   `kills_local` int(11) NOT NULL DEFAULT 0,
-  `kills_visitante` int(11) NOT NULL DEFAULT 0
+  `kills_visitante` int(11) NOT NULL DEFAULT 0,
+  `fase` enum('L','SF','F') NOT NULL DEFAULT 'L'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `members_partidos`
+--
+
+INSERT INTO `members_partidos` (`id`, `competicion_temporada_id`, `jornada`, `local_id`, `visitante_id`, `kills_local`, `kills_visitante`, `fase`) VALUES
+(1, 21, 1, 1, 2, 4, 2, 'L'),
+(2, 21, 1, 4, 3, 2, 4, 'L'),
+(3, 21, 1, 5, 6, 4, 2, 'L'),
+(4, 21, 2, 4, 2, 4, 0, 'L'),
+(5, 21, 2, 7, 5, 4, 0, 'L'),
+(6, 21, 2, 6, 1, 0, 4, 'L'),
+(7, 21, 3, 2, 5, 0, 4, 'L'),
+(8, 21, 3, 7, 1, 4, 0, 'L'),
+(9, 21, 3, 3, 6, 4, 1, 'L'),
+(10, 21, 4, 5, 3, 1, 4, 'L'),
+(11, 21, 4, 2, 7, 2, 4, 'L'),
+(12, 21, 4, 1, 4, 3, 4, 'L'),
+(13, 21, 5, 7, 4, 1, 4, 'L'),
+(14, 21, 5, 1, 3, 4, 3, 'L'),
+(15, 21, 5, 6, 2, 3, 4, 'L'),
+(16, 21, 6, 5, 4, 0, 4, 'L'),
+(17, 21, 6, 7, 6, 4, 1, 'L'),
+(18, 21, 6, 2, 3, 1, 4, 'L'),
+(19, 21, 7, 5, 1, 1, 4, 'L'),
+(20, 21, 7, 4, 6, 4, 1, 'L'),
+(21, 21, 7, 7, 3, 3, 4, 'L'),
+(22, 21, 8, 4, 3, 4, 1, 'L'),
+(23, 21, 8, 5, 6, 3, 4, 'L'),
+(24, 21, 8, 1, 2, 1, 4, 'L'),
+(25, 21, 9, 5, 7, 0, 4, 'L'),
+(26, 21, 9, 6, 1, 4, 2, 'L'),
+(27, 21, 9, 4, 2, 2, 4, 'L'),
+(28, 21, 10, 5, 2, 2, 4, 'L'),
+(29, 21, 10, 7, 1, 4, 3, 'L'),
+(30, 21, 10, 3, 6, 4, 2, 'L'),
+(31, 21, 11, 1, 4, 3, 4, 'L'),
+(32, 21, 11, 5, 3, 1, 4, 'L'),
+(33, 21, 11, 7, 2, 2, 1, 'L'),
+(34, 21, 12, 2, 6, 4, 2, 'L'),
+(35, 21, 12, 1, 3, 4, 3, 'L'),
+(36, 21, 12, 7, 4, 4, 1, 'L'),
+(37, 21, 13, 2, 3, 1, 4, 'L'),
+(38, 21, 13, 4, 5, 4, 0, 'L'),
+(39, 21, 13, 6, 7, 3, 4, 'L'),
+(40, 21, 14, 5, 1, 2, 4, 'L'),
+(41, 21, 14, 4, 6, 4, 1, 'L'),
+(42, 21, 14, 7, 3, 4, 1, 'L');
 
 -- --------------------------------------------------------
 
@@ -284,6 +1000,20 @@ INSERT INTO `members_pokemon` (`id`, `equipo_id`, `pokemon_id`) VALUES
 (44, 7, 107),
 (43, 7, 131),
 (48, 7, 143);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `members_sets`
+--
+
+CREATE TABLE `members_sets` (
+  `id` int(11) NOT NULL,
+  `partido_id` int(11) NOT NULL,
+  `numero_set` tinyint(4) NOT NULL,
+  `kills_local` int(11) NOT NULL DEFAULT 0,
+  `kills_visitante` int(11) NOT NULL DEFAULT 0
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -2416,7 +3146,22 @@ INSERT INTO `partidos` (`id`, `competicion_temporada_id`, `fase`, `jornada`, `lo
 (1376, 10, 'L', 10, 131, 130),
 (1377, 10, 'L', 10, 135, 118),
 (1378, 10, 'L', 10, 120, 125),
-(1379, 10, 'L', 10, 128, 122);
+(1379, 10, 'L', 10, 128, 122),
+(1380, 10, 'L', 11, 121, 129),
+(1381, 10, 'L', 11, 125, 124),
+(1382, 10, 'L', 11, 136, 130),
+(1383, 10, 'L', 11, 126, 119),
+(1384, 10, 'L', 11, 122, 132),
+(1385, 10, 'L', 11, 118, 123),
+(1386, 10, 'L', 11, 137, 131),
+(1387, 10, 'L', 11, 127, 135),
+(1388, 10, 'L', 11, 134, 120),
+(1389, 10, 'L', 11, 133, 128),
+(1390, 10, 'L', 12, 130, 121),
+(1391, 10, 'L', 12, 134, 124),
+(1392, 10, 'L', 12, 129, 122),
+(1393, 10, 'L', 12, 127, 119),
+(1394, 10, 'L', 12, 132, 133);
 
 -- --------------------------------------------------------
 
@@ -4421,7 +5166,22 @@ INSERT INTO `sets` (`id`, `partido_id`, `numero_set`, `vida_local`, `vida_visita
 (1564, 1376, 1, 71, 0),
 (1565, 1377, 1, 33, 0),
 (1566, 1378, 1, 53, 0),
-(1567, 1379, 1, 100, 0);
+(1567, 1379, 1, 100, 0),
+(1568, 1380, 1, 0, 47),
+(1569, 1381, 1, 0, 0),
+(1570, 1382, 1, 41, 0),
+(1571, 1383, 1, 0, 100),
+(1572, 1384, 1, 32, 0),
+(1573, 1385, 1, 95, 0),
+(1574, 1386, 1, 0, 100),
+(1575, 1387, 1, 0, 100),
+(1576, 1388, 1, 0, 89),
+(1577, 1389, 1, 0, 100),
+(1578, 1390, 1, 0, 22),
+(1579, 1391, 1, 0, 100),
+(1580, 1392, 1, 100, 0),
+(1581, 1393, 1, 1, 0),
+(1582, 1394, 1, 100, 100);
 
 -- --------------------------------------------------------
 
@@ -4533,9 +5293,10 @@ ALTER TABLE `members_equipos`
 --
 ALTER TABLE `members_kills`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `kill_partido_miembro_pokemon` (`partido_id`,`miembro_id`,`pokemon_id`),
+  ADD UNIQUE KEY `kill_partido_miembro_pokemon` (`partido_id`,`set_id`,`miembro_id`,`pokemon_id`),
   ADD KEY `fk_members_kills_miembro` (`miembro_id`),
-  ADD KEY `fk_members_kills_pokemon` (`pokemon_id`);
+  ADD KEY `fk_members_kills_pokemon` (`pokemon_id`),
+  ADD KEY `idx_kills_set` (`set_id`);
 
 --
 -- Indices de la tabla `members_miembros`
@@ -4548,9 +5309,10 @@ ALTER TABLE `members_miembros`
 --
 ALTER TABLE `members_participantes`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `pokemon_partido_miembro` (`partido_id`,`miembro_id`,`pokemon_id`),
+  ADD UNIQUE KEY `pokemon_partido_miembro` (`partido_id`,`set_id`,`miembro_id`,`pokemon_id`),
   ADD KEY `fk_members_participantes_miembro` (`miembro_id`),
-  ADD KEY `fk_members_participantes_pokemon` (`pokemon_id`);
+  ADD KEY `fk_members_participantes_pokemon` (`pokemon_id`),
+  ADD KEY `idx_participantes_set` (`set_id`);
 
 --
 -- Indices de la tabla `members_partidos`
@@ -4568,6 +5330,13 @@ ALTER TABLE `members_pokemon`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `pokemon_equipo_pokemon` (`equipo_id`,`pokemon_id`),
   ADD KEY `fk_members_pokemon_pokemon` (`pokemon_id`);
+
+--
+-- Indices de la tabla `members_sets`
+--
+ALTER TABLE `members_sets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_partido_set` (`partido_id`,`numero_set`);
 
 --
 -- Indices de la tabla `mundial_ediciones`
@@ -4672,43 +5441,49 @@ ALTER TABLE `competiciones`
 -- AUTO_INCREMENT de la tabla `competiciones_temporadas`
 --
 ALTER TABLE `competiciones_temporadas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT de la tabla `members_equipos`
 --
 ALTER TABLE `members_equipos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `members_kills`
 --
 ALTER TABLE `members_kills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=319;
 
 --
 -- AUTO_INCREMENT de la tabla `members_miembros`
 --
 ALTER TABLE `members_miembros`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `members_participantes`
 --
 ALTER TABLE `members_participantes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=319;
 
 --
 -- AUTO_INCREMENT de la tabla `members_partidos`
 --
 ALTER TABLE `members_partidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT de la tabla `members_pokemon`
 --
 ALTER TABLE `members_pokemon`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+
+--
+-- AUTO_INCREMENT de la tabla `members_sets`
+--
+ALTER TABLE `members_sets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `mundial_ediciones`
@@ -4744,7 +5519,7 @@ ALTER TABLE `participantes`
 -- AUTO_INCREMENT de la tabla `partidos`
 --
 ALTER TABLE `partidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1380;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1395;
 
 --
 -- AUTO_INCREMENT de la tabla `plazas_especiales`
@@ -4762,7 +5537,7 @@ ALTER TABLE `pokemon`
 -- AUTO_INCREMENT de la tabla `sets`
 --
 ALTER TABLE `sets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1568;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1583;
 
 --
 -- AUTO_INCREMENT de la tabla `temporadas`
