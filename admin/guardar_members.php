@@ -49,6 +49,43 @@ if ($fase !== "L") {
     $jornada = null;
 }
 
+/*
+ * Obtener la competición y validar la temporada seleccionada.
+ */
+
+$sql = "
+    SELECT ct.competicion_id, c.nombre AS competicion_nombre
+    FROM competiciones_temporadas ct
+    INNER JOIN competiciones c
+        ON c.id = ct.competicion_id
+    WHERE ct.id = ?
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $competicion_temporada);
+$stmt->execute();
+
+$datosCompeticion = $stmt->get_result()->fetch_assoc();
+
+if (!$datosCompeticion) {
+    die("La temporada seleccionada no existe.");
+}
+
+$competicionId = (int) $datosCompeticion["competicion_id"];
+$nombreCompeticion = $datosCompeticion["competicion_nombre"];
+
+$esCaos = stripos($nombreCompeticion, "caos") !== false;
+
+$jornadaDoble = (
+    $fase === "L" &&
+    $esCaos &&
+    $jornada !== null &&
+    $jornada % 2 === 0
+);
+
+$maxPokemon = $jornadaDoble ? 6 : 4;
+$maxKillsEquipo = $jornadaDoble ? 6 : 4;
+
 if ($local === $visitante) {
     die("El local y el visitante deben ser diferentes.");
 }
@@ -65,11 +102,11 @@ if ($fase === "L") {
     }
 
     if (
-        count($local_pokemon) < 1 || count($local_pokemon) > 4 ||
-        count($visitante_pokemon) < 1 || count($visitante_pokemon) > 4
-    ) {
-        die("Debes seleccionar entre 1 y 4 Pokémon por equipo.");
-    }
+    count($local_pokemon) < 1 || count($local_pokemon) > $maxPokemon ||
+    count($visitante_pokemon) < 1 || count($visitante_pokemon) > $maxPokemon
+) {
+    die("Debes seleccionar entre 1 y $maxPokemon Pokémon por equipo.");
+}
 
     if (
         count($kills_local) !== count($local_pokemon) ||
@@ -77,24 +114,6 @@ if ($fase === "L") {
     ) {
         die("Los Pokémon y sus kills no coinciden.");
     }
-}
-
-/*
- * Comprobar que la temporada pertenece a Members League
- * competicion_id = 17
- */
-
-$sql = "SELECT id
-        FROM competiciones_temporadas
-        WHERE id = ?
-        AND competicion_id = 17";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $competicion_temporada);
-$stmt->execute();
-
-if ($stmt->get_result()->num_rows !== 1) {
-    die("La temporada seleccionada no pertenece a Members League.");
 }
 
 /*
@@ -309,18 +328,29 @@ if ($fase === "L") {
     $kills_local = array_map("intval", $kills_local);
     $kills_visitante = array_map("intval", $kills_visitante);
 
-    foreach (array_merge($kills_local, $kills_visitante) as $kills) {
-        if ($kills < 0 || $kills > 4) {
-            die("Las kills deben estar entre 0 y 4.");
-        }
+/*
+ * Validar kills individuales según la jornada.
+ * Caos League: jornadas pares, máximo 6.
+ * Resto de jornadas de liga: máximo 4.
+ */
+foreach (array_merge($kills_local, $kills_visitante) as $kills) {
+    if ($kills < 0 || $kills > $maxPokemon) {
+        die(
+            "Las kills individuales deben estar entre 0 y " .
+            $maxPokemon . "."
+        );
     }
+}
 
-    $total_local = array_sum($kills_local);
-    $total_visitante = array_sum($kills_visitante);
+$total_local = array_sum($kills_local);
+$total_visitante = array_sum($kills_visitante);
 
-    if ($total_local > 4 || $total_visitante > 4) {
-        die("Un participante no puede superar las 4 kills.");
-    }
+if (
+    $total_local > $maxKillsEquipo ||
+    $total_visitante > $maxKillsEquipo
+) {
+    die("Cada equipo puede sumar como máximo $maxKillsEquipo kills.");
+}
 
 } else {
 

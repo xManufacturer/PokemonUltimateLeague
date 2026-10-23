@@ -29,6 +29,7 @@ $sql = "
         ON ct.temporada_id = t.id
 
     WHERE ct.fecha_actualizacion IS NOT NULL
+        AND c.nombre NOT IN ('Elite League', 'Caos League')
 
     ORDER BY ct.fecha_actualizacion DESC
 
@@ -250,17 +251,27 @@ if (
 $sql = "
     SELECT
         nombre,
-        ruta
+        ruta,
+        tipo
     FROM competiciones
     WHERE visible = 1
     ORDER BY id
 ";
 
 $stmt = $conn->prepare($sql);
-
 $stmt->execute();
-
 $resultado = $stmt->get_result();
+
+$competicionesNormales = [];
+$competicionesDiscord = [];
+
+while ($fila = $resultado->fetch_assoc()) {
+    if (in_array($fila["nombre"], ["Elite League", "Caos League"], true)) {
+        $competicionesDiscord[] = $fila;
+    } else {
+        $competicionesNormales[] = $fila;
+    }
+}
 
 ?>
 
@@ -406,13 +417,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
 </div>
+<br><h2>Competiciones Oficiales</h2>
     <div class="tarjetas">
-        <?php while ($fila = $resultado->fetch_assoc()) { ?>
-            <a href="competiciones/<?php echo $fila['ruta']; ?>">
-                <?php echo $fila['nombre']; ?>
+    <?php foreach ($competicionesNormales as $fila) { ?>
+        <a href="competiciones/<?php echo htmlspecialchars($fila['ruta']); ?>">
+            <?php echo htmlspecialchars($fila['nombre']); ?>
+        </a>
+    <?php } ?>
+</div>
+
+<?php if (!empty($competicionesDiscord)) { ?>
+
+    <br><br><h2>Competiciones de Discord</h2>
+
+    <div class="tarjetas tarjetas-discord">
+        <?php foreach ($competicionesDiscord as $fila) { ?>
+            <a href="competiciones/<?php echo htmlspecialchars($fila['ruta']); ?>">
+                <?php echo htmlspecialchars($fila['nombre']); ?>
             </a>
         <?php } ?>
     </div>
+
+<?php } ?>
 
     <div class="futuras-adiciones">
         <h3>Aspectos que faltan y futuras adiciones:</h3>

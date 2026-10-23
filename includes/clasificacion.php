@@ -878,15 +878,21 @@ $resultado = $stmt->get_result();
 
     $sql = "
         SELECT
-            id,
-            local_id,
-            visitante_id,
-            kills_local,
-            kills_visitante
-        FROM members_partidos
-        WHERE competicion_temporada_id = ?
-        AND fase = 'L'
-        ORDER BY jornada ASC, id ASC
+            mp.id,
+            mp.local_id,
+            mp.visitante_id,
+            mp.kills_local,
+            mp.kills_visitante,
+            mp.jornada,
+            c.nombre AS competicion_nombre
+        FROM members_partidos mp
+        INNER JOIN competiciones_temporadas ct
+            ON ct.id = mp.competicion_temporada_id
+        INNER JOIN competiciones c
+            ON c.id = ct.competicion_id
+        WHERE mp.competicion_temporada_id = ?
+          AND mp.fase = 'L'
+        ORDER BY mp.jornada ASC, mp.id ASC
     ";
 
     $stmt = $conn->prepare($sql);
@@ -940,26 +946,32 @@ $resultado = $stmt->get_result();
 
         /*
          * RESULTADO
-         *
-         * Si alguien llega a 4:
-         *     gana.
-         *
-         * Si ninguno llega a 4:
-         *     empate.
+         * En jornadas pares de Caos se necesitan 6 kills para ganar.
+         * En el resto de jornadas se necesitan 4.
+         * Si ambos alcanzan el límite (por ejemplo 6-6), es empate.
          */
+        $jornadaPartido = (int)($partido["jornada"] ?? 0);
+        $nombreCompeticionPartido = (string)($partido["competicion_nombre"] ?? "");
+        $esCaosJornadaDoble = (
+            stripos($nombreCompeticionPartido, "caos") !== false
+            && $jornadaPartido > 0
+            && $jornadaPartido % 2 === 0
+        );
+        $limiteVictoria = $esCaosJornadaDoble ? 6 : 4;
 
-        if ($killsLocal === 4 && $killsVisitante < 4) {
-
+        if (
+            $killsLocal >= $limiteVictoria
+            && $killsVisitante < $limiteVictoria
+        ) {
             $clasificacion[$local]["pg"]++;
             $clasificacion[$visitante]["pp"]++;
-
-        } elseif ($killsVisitante === 4 && $killsLocal < 4) {
-
+        } elseif (
+            $killsVisitante >= $limiteVictoria
+            && $killsLocal < $limiteVictoria
+        ) {
             $clasificacion[$visitante]["pg"]++;
             $clasificacion[$local]["pp"]++;
-
         } else {
-
             $clasificacion[$local]["pe"]++;
             $clasificacion[$visitante]["pe"]++;
         }
@@ -1117,7 +1129,7 @@ while ($fila = $resultadoKillCount->fetch_assoc()) {
     ];
 }
 
-function obtenerClasificacionHistoricaMembers($conn)
+function obtenerClasificacionHistoricaMembers($conn, $competicionId = 17)
 {
     $miembros = [];
     $killCount = [];
@@ -1148,7 +1160,8 @@ function obtenerClasificacionHistoricaMembers($conn)
             m.nombre,
             m.imagen,
             m.pais,
-            t.numero AS temporada
+            t.numero AS temporada,
+            c.nombre AS competicion_nombre
         FROM members_equipos e
 
         INNER JOIN members_miembros m
@@ -1163,14 +1176,17 @@ function obtenerClasificacionHistoricaMembers($conn)
         INNER JOIN competiciones c
             ON c.id = ct.competicion_id
 
-        WHERE c.tipo = 'members'
+        WHERE ct.competicion_id = ?
 
-        ORDER BY
-            t.numero ASC,
-            e.miembro_id ASC
-    ";
+ORDER BY
+    t.numero ASC,
+    e.miembro_id ASC
+";
 
-    $resultado = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $competicionId);
+$stmt->execute();
+$resultado = $stmt->get_result();
 
     while ($fila = $resultado->fetch_assoc()) {
 
@@ -1214,14 +1230,15 @@ function obtenerClasificacionHistoricaMembers($conn)
                 local_id,
                 visitante_id,
                 kills_local,
-                kills_visitante
+                kills_visitante,
+                jornada
             FROM members_partidos
             WHERE competicion_temporada_id = ?
-            AND fase = 'L'
-            AND (
-                local_id = ?
-                OR visitante_id = ?
-            )
+              AND fase = 'L'
+              AND (
+                  local_id = ?
+                  OR visitante_id = ?
+              )
             ORDER BY jornada, id
         ";
 
@@ -1242,6 +1259,14 @@ function obtenerClasificacionHistoricaMembers($conn)
 
             $killsLocal = (int)$partido["kills_local"];
             $killsVisitante = (int)$partido["kills_visitante"];
+            $jornadaPartido = (int)($partido["jornada"] ?? 0);
+            $nombreCompeticionPartido = (string)($fila["competicion_nombre"] ?? "");
+            $esCaosJornadaDoble = (
+                stripos($nombreCompeticionPartido, "caos") !== false
+                && $jornadaPartido > 0
+                && $jornadaPartido % 2 === 0
+            );
+            $limiteVictoria = $esCaosJornadaDoble ? 6 : 4;
 
             $miembros[$miembroId]["com"]++;
 
@@ -1254,16 +1279,14 @@ function obtenerClasificacionHistoricaMembers($conn)
                 $miembros[$miembroId]["kills_favor"] += $killsLocal;
                 $miembros[$miembroId]["kills_contra"] += $killsVisitante;
 
-                /*
-                 * Si llega a 4 kills, gana.
-                 */
+                /* El límite de victoria es 6 en jornadas pares de Caos; 4 en las demás. */
 
-                if ($killsLocal >= 4) {
+                if ($killsLocal >= $limiteVictoria && $killsVisitante < $limiteVictoria) {
 
                     $miembros[$miembroId]["v"]++;
                     $miembros[$miembroId]["puntos"] += 3;
 
-                } elseif ($killsVisitante >= 4) {
+                } elseif ($killsVisitante >= $limiteVictoria && $killsLocal < $limiteVictoria) {
 
                     $miembros[$miembroId]["d"]++;
 
@@ -1282,16 +1305,14 @@ function obtenerClasificacionHistoricaMembers($conn)
                 $miembros[$miembroId]["kills_favor"] += $killsVisitante;
                 $miembros[$miembroId]["kills_contra"] += $killsLocal;
 
-                /*
-                 * Si llega a 4 kills, gana.
-                 */
+                /* El límite de victoria es 6 en jornadas pares de Caos; 4 en las demás. */
 
-                if ($killsVisitante >= 4) {
+                if ($killsVisitante >= $limiteVictoria && $killsLocal < $limiteVictoria) {
 
                     $miembros[$miembroId]["v"]++;
                     $miembros[$miembroId]["puntos"] += 3;
 
-                } elseif ($killsLocal >= 4) {
+                } elseif ($killsLocal >= $limiteVictoria && $killsVisitante < $limiteVictoria) {
 
                     $miembros[$miembroId]["d"]++;
 
@@ -1427,7 +1448,7 @@ function obtenerClasificacionHistoricaMembers($conn)
         INNER JOIN competiciones c
             ON c.id = ct.competicion_id
 
-        WHERE c.tipo = 'members'
+        WHERE c.id = ?
 
         GROUP BY
             p.id,
@@ -1440,7 +1461,11 @@ function obtenerClasificacionHistoricaMembers($conn)
             p.id ASC
     ";
 
-    $resultadoKillCount = $conn->query($sqlKillCount);
+    $stmtKillCount = $conn->prepare($sqlKillCount);
+    $stmtKillCount->bind_param("i", $competicionId);
+    $stmtKillCount->execute();
+
+    $resultadoKillCount = $stmtKillCount->get_result();
 
     while ($fila = $resultadoKillCount->fetch_assoc()) {
 
@@ -1484,14 +1509,18 @@ function obtenerClasificacionHistoricaMembers($conn)
         INNER JOIN competiciones c
             ON c.id = ct.competicion_id
 
-        WHERE c.tipo = 'members'
+        WHERE c.id = ?
 
         ORDER BY
             mep.pokemon_id ASC,
             m.nombre ASC
     ";
 
-    $resultadoMiembrosPokemon = $conn->query($sqlMiembrosPokemon);
+    $stmtMiembrosPokemon = $conn->prepare($sqlMiembrosPokemon);
+    $stmtMiembrosPokemon->bind_param("i", $competicionId);
+    $stmtMiembrosPokemon->execute();
+
+    $resultadoMiembrosPokemon = $stmtMiembrosPokemon->get_result();
 
     while ($fila = $resultadoMiembrosPokemon->fetch_assoc()) {
 

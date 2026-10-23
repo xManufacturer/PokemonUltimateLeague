@@ -1583,10 +1583,23 @@ $unaColumna = ($totalParticipantes <= 10);
 
 <?php if ($datos["tipo"] == "members") { ?>
 
+    <?php
+    $mostrarDosColumnasCaos = (
+        $datos["competicion"] === "Caos League" &&
+        (int)$datos["temporada"] === 1 &&
+        count($clasificacionMembers) > 7
+    );
+
+    $columnasClasificacionMembers = $mostrarDosColumnasCaos
+        ? [array_slice($clasificacionMembers, 0, 7), array_slice($clasificacionMembers, 7)]
+        : [$clasificacionMembers];
+    ?>
+
     <h2>Clasificación</h2>
 
     <div class="clasificacion-contenedor clasificacion-members">
 
+        <?php foreach ($columnasClasificacionMembers as $indiceColumna => $filasColumna) { ?>
         <div class="clasificacion-columna">
 
             <table>
@@ -1606,9 +1619,9 @@ $unaColumna = ($totalParticipantes <= 10);
 
                 <?php
 
-                $posicion = 1;
+                $posicion = $mostrarDosColumnasCaos ? ($indiceColumna * 10 + 1) : 1;
 
-                foreach ($clasificacionMembers as $fila) {
+                foreach ($filasColumna as $fila) {
 
     $clases = [];
 
@@ -1707,6 +1720,7 @@ $unaColumna = ($totalParticipantes <= 10);
             </table>
 
         </div>
+        <?php } ?>
 
     </div>
 

@@ -22,7 +22,7 @@ $resultado = $stmt->get_result();
  * ============================================================
  */
 
-$historicaMembers = obtenerClasificacionHistoricaMembers($conn);
+$historicaMembers = obtenerClasificacionHistoricaMembers($conn, $competicion);
 
 $clasificacionHistoricaMembers =
     $historicaMembers["clasificacion"];
@@ -338,11 +338,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <?php
 $sql = "SELECT MAX(ct.fecha_actualizacion) AS fecha_actualizacion
         FROM competiciones_temporadas ct
-        JOIN competiciones c
-            ON ct.competicion_id = c.id
-        WHERE c.tipo = 'members'";
+        WHERE ct.competicion_id = ?";
 
-$resultadoFecha = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $competicion);
+$stmt->execute();
+
+$resultadoFecha = $stmt->get_result();
 $filaActualizacion = $resultadoFecha->fetch_assoc();
 
 $fechaHistorica = $filaActualizacion["fecha_actualizacion"];

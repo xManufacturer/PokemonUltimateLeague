@@ -1,34 +1,47 @@
 <?php
-
 require_once '../config/conexion.php';
 require_once 'proteger.php';
 
+// Cargar las competiciones disponibles.
+$sqlCompeticiones = "
+    SELECT id, nombre
+    FROM competiciones
+    WHERE LOWER(nombre) LIKE '%members%'
+       OR LOWER(nombre) LIKE '%elite%'
+       OR LOWER(nombre) LIKE '%caos%'
+    ORDER BY FIELD(LOWER(nombre),
+        'members league',
+        'elite league',
+        'caos league'
+    ), nombre
+";
 
-/*
- * Cargar temporadas de Members League
- *
- * competicion_id = 17
- */
+$competiciones = $conn->query($sqlCompeticiones);
 
-$competicion = 17;
+// Competición seleccionada. Members League (17) es la predeterminada.
+$competicion = isset($_GET['competicion'])
+    ? (int) $_GET['competicion']
+    : 17;
 
-$sql = "SELECT
-            ct.id,
-            t.numero,
-            ct.jornadas,
-            ct.sets_final
-        FROM competiciones_temporadas ct
-        INNER JOIN temporadas t
-            ON ct.temporada_id = t.id
-        WHERE ct.competicion_id = ?
-        ORDER BY t.numero";
+// Cargar las temporadas de la competición elegida.
+$sql = "
+    SELECT
+        ct.id,
+        t.numero,
+        ct.jornadas,
+        ct.sets_final
+    FROM competiciones_temporadas ct
+    INNER JOIN temporadas t
+        ON ct.temporada_id = t.id
+    WHERE ct.competicion_id = ?
+    ORDER BY t.numero
+";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $competicion);
 $stmt->execute();
 
 $temporadas = $stmt->get_result();
-
 ?>
 
 <!DOCTYPE html>
@@ -79,6 +92,32 @@ $temporadas = $stmt->get_result();
     name="competicion_temporada"
     id="competicion_temporada">
 
+    <!-- COMPETICIÓN -->
+<label for="competicion">
+    <strong>Competición</strong>
+</label>
+
+<select
+    name="competicion"
+    id="competicion"
+    required
+    onchange="cambiarCompeticion(this.value)"
+>
+    <option value="">...</option>
+
+    <?php while ($filaComp = $competiciones->fetch_assoc()) { ?>
+        <option
+            value="<?php echo (int) $filaComp['id']; ?>"
+            <?php echo ((int) $filaComp['id'] === $competicion)
+                ? 'selected'
+                : ''; ?>
+        >
+            <?php echo htmlspecialchars($filaComp['nombre']); ?>
+        </option>
+    <?php } ?>
+</select>
+
+<br><br>
 
     <!-- =========================================
          TEMPORADA
@@ -232,14 +271,10 @@ $temporadas = $stmt->get_result();
         </div>
 
         <div class="contador">
-
-            <span id="contadorLocal">
-                0
-            </span>
-
-            / 4
-
-        </div>
+    <span id="contadorLocal">0</span>
+    /
+    <span id="maximoLocal">4</span>
+</div>
 
     </div>
 
@@ -275,14 +310,10 @@ $temporadas = $stmt->get_result();
         </div>
 
         <div class="contador">
-
-            <span id="contadorVisitante">
-                0
-            </span>
-
-            / 4
-
-        </div>
+    <span id="contadorVisitante">0</span>
+    /
+    <span id="maximoVisitante">4</span>
+</div>
 
     </div>
 
@@ -372,6 +403,55 @@ $temporadas = $stmt->get_result();
 
 <script>
 
+function cambiarCompeticion(competicionId) {
+    if (!competicionId) {
+        return;
+    }
+
+    window.location.href =
+        "registrar_members.php?competicion=" +
+        encodeURIComponent(competicionId);
+}
+
+function esJornadaDobleCaos() {
+    const selectCompeticion = document.getElementById('competicion');
+    const selectFase = document.getElementById('fase');
+    const selectJornada = document.getElementById('jornada');
+
+    const nombreCompeticion =
+        selectCompeticion?.options[selectCompeticion.selectedIndex]?.text || '';
+
+    const jornada = parseInt(selectJornada?.value, 10);
+
+    return (
+        nombreCompeticion.toLowerCase().includes('caos') &&
+        selectFase?.value === 'L' &&
+        Number.isInteger(jornada) &&
+        jornada % 2 === 0
+    );
+}
+
+function maxPokemonLiga() {
+    return esJornadaDobleCaos() ? 6 : 4;
+}
+
+function maxKillsEquipoLiga() {
+    return esJornadaDobleCaos() ? 6 : 4;
+}
+
+function actualizarLimitesKillsLiga() {
+    const maximo = maxKillsEquipoLiga();
+
+    [pokemonLocal, pokemonVisitante].forEach(contenedor => {
+        contenedor.querySelectorAll('input[name^="kills_"]').forEach(input => {
+            input.max = String(maximo);
+            const valor = parseInt(input.value, 10) || 0;
+            if (valor > maximo) input.value = String(maximo);
+        });
+    });
+
+    actualizarMarcador();
+}
 
 /*
  * Elementos
@@ -420,6 +500,16 @@ const marcadorVisitante =
 
 const contenedorSetsMembers = document.getElementById('contenedorSetsMembers');
 const contenedorLigaMembers = document.getElementById('contenedorLigaMembers');
+
+function actualizarContadoresMaximos() {
+    const maximo = maxPokemonLiga();
+
+    document.getElementById("maximoLocal").textContent = maximo;
+    document.getElementById("maximoVisitante").textContent = maximo;
+}
+
+jornada.addEventListener("change", actualizarContadoresMaximos);
+fase.addEventListener("change", actualizarContadoresMaximos);
 
 function actualizarCampoJornada() {
     const esFaseLiga = fase.value === "L";
@@ -492,6 +582,7 @@ actualizarVistaSetsMembers();
 // Aplicar la vista correcta al cargar el formulario.
 actualizarCampoJornada();
 actualizarVistaSetsMembers();
+actualizarContadoresMaximos();
 
 /*
  * Temporada
@@ -636,7 +727,7 @@ function cargarEquipoSet(miembroId, numeroSet, lado) {
                         ".pokemon-member.seleccionado"
                     ).length;
 
-                    if (seleccionados >= 4) {
+                    if (seleccionados >= maxPokemonLiga()) {
                         alert("Solo puedes seleccionar 4 Pokémon por equipo y por set.");
                         return;
                     }
@@ -798,20 +889,32 @@ function cargarEquipo(
                     );
 
 
+                inputKills.max = String(maxKillsEquipoLiga());
+
                 inputKills.addEventListener(
                     "input",
                     function () {
+                        const maximo = maxKillsEquipoLiga();
+                        let valor = parseInt(this.value, 10);
 
-                        if (this.value < 0) {
-                            this.value = 0;
+                        if (Number.isNaN(valor) || valor < 0) valor = 0;
+                        if (valor > maximo) valor = maximo;
+
+                        // El total de kills del equipo tampoco puede superar el límite.
+                        const otrosCampos = Array.from(
+                            contenedor.querySelectorAll('input[name^="kills_"]:not(:disabled)')
+                        ).filter(input => input !== this);
+                        const totalOtros = otrosCampos.reduce(
+                            (suma, input) => suma + (parseInt(input.value, 10) || 0),
+                            0
+                        );
+
+                        if (totalOtros + valor > maximo) {
+                            valor = Math.max(0, maximo - totalOtros);
                         }
 
-                        if (this.value > 4) {
-                            this.value = 4;
-                        }
-
+                        this.value = String(valor);
                         actualizarMarcador();
-
                     }
                 );
 
@@ -874,18 +977,12 @@ function cargarEquipo(
 
                         else {
 
-                            if (
-                                seleccionados >= 4
-                            ) {
+                            const maximo = maxPokemonLiga();
 
-                                alert(
-                                    "Solo puedes seleccionar 4 Pokémon."
-                                );
-
-                                return;
-
-                            }
-
+if (seleccionados >= maximo) {
+    alert("Solo puedes seleccionar " + maximo + " Pokémon en esta jornada.");
+    return;
+}
 
                             tarjeta.classList.add(
                                 "seleccionado"
@@ -1218,15 +1315,46 @@ document.getElementById("formMembers").addEventListener("submit", function (e) {
         ".pokemon-member.seleccionado"
     ).length;
 
-    if (seleccionadosLocal < 1 || seleccionadosLocal > 4) {
-        e.preventDefault();
-        alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo local.");
-        return;
-    }
+    const maximo = maxPokemonLiga();
 
-    if (seleccionadosVisitante < 1 || seleccionadosVisitante > 4) {
+if (seleccionadosLocal < 1 || seleccionadosLocal > maximo) {
+    e.preventDefault();
+    alert(
+        "Debes seleccionar entre 1 y " + maximo +
+        " Pokémon para el equipo local."
+    );
+    return;
+}
+
+if (seleccionadosVisitante < 1 || seleccionadosVisitante > maximo) {
+    e.preventDefault();
+    alert(
+        "Debes seleccionar entre 1 y " + maximo +
+        " Pokémon para el equipo visitante."
+    );
+    return;
+}
+
+    const maxKills = maxKillsEquipoLiga();
+    const totalKillsLocal = Array.from(
+        pokemonLocal.querySelectorAll('input[name="kills_local[]"]:not(:disabled)')
+    ).reduce((suma, input) => suma + (parseInt(input.value, 10) || 0), 0);
+    const totalKillsVisitante = Array.from(
+        pokemonVisitante.querySelectorAll('input[name="kills_visitante[]"]:not(:disabled)')
+    ).reduce((suma, input) => suma + (parseInt(input.value, 10) || 0), 0);
+
+    const killsIndividualesInvalidas = Array.from(
+        document.querySelectorAll('#pokemonLocal input[name="kills_local[]"]:not(:disabled), #pokemonVisitante input[name="kills_visitante[]"]:not(:disabled)')
+    ).some(input => {
+        const valor = parseInt(input.value, 10) || 0;
+        return valor < 0 || valor > maxKills;
+    });
+
+    if (killsIndividualesInvalidas ||
+        totalKillsLocal > maxKills ||
+        totalKillsVisitante > maxKills) {
         e.preventDefault();
-        alert("Debes seleccionar entre 1 y 4 Pokémon para el equipo visitante.");
+        alert("Las kills de cada Pokémon y el total de cada equipo no pueden superar " + maxKills + " en esta jornada.");
         return;
     }
 });

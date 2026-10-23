@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: sql303.infinityfree.com
--- Tiempo de generación: 18-10-2026 a las 05:55:43
+-- Tiempo de generación: 21-10-2026 a las 05:23:41
 -- Versión del servidor: 11.4.13-MariaDB
 -- Versión de PHP: 7.2.22
 
@@ -112,7 +112,7 @@ INSERT INTO `competiciones_temporadas` (`id`, `competicion_id`, `temporada_id`, 
 (7, 11, 2, 3, 4, 2, 3, '2025-03-13 09:26:17', NULL),
 (8, 12, 2, 1, NULL, 1, NULL, '2025-03-27 16:02:02', NULL),
 (9, 1, 3, 19, NULL, 1, NULL, '2026-04-06 01:58:05', NULL),
-(10, 2, 3, 19, NULL, 1, NULL, '2026-10-17 23:58:05', NULL),
+(10, 2, 3, 19, NULL, 1, NULL, '2026-10-20 12:58:37', NULL),
 (11, 13, 3, NULL, NULL, 1, 1, '2026-05-15 09:19:23', 9),
 (12, 14, 3, NULL, NULL, 1, 1, NULL, 10),
 (13, 13, 1, NULL, NULL, 1, 1, '2023-09-15 03:25:07', 1),
@@ -160,7 +160,8 @@ INSERT INTO `members_equipos` (`id`, `competicion_temporada_id`, `miembro_id`) V
 (15, 22, 8),
 (16, 22, 9),
 (17, 22, 10),
-(18, 22, 11);
+(18, 22, 11),
+(19, 22, 12);
 
 -- --------------------------------------------------------
 
@@ -523,13 +524,14 @@ INSERT INTO `members_miembros` (`id`, `nombre`, `imagen`, `pais`) VALUES
 (2, 'Honrey', 'honrey.png', 'argentina.png'),
 (3, 'Lunaparka', 'lunaparka.png', 'argentina.png'),
 (4, 'Estrac', 'estrac.png', 'chile.png'),
-(5, 'ElAguDBP', 'elagudbp.png', 'argentina.png'),
+(5, 'ElAgudBP', 'elagudbp.png', 'argentina.png'),
 (6, 'SergioLC17', 'sergiolc17.png', 'argentina.png'),
 (7, 'Fender', 'fender.png', 'argentina.png'),
 (8, 'Manufacturer', 'manufacturer.png', 'españa.png'),
 (9, 'Munarri', 'munarri.png', 'españa.png'),
 (10, 'Raevico', 'raevico.png', 'españa.png'),
-(11, 'MrTarness', 'mrtarness.png', 'peru.png');
+(11, 'MrTarness', 'mrtarness.png', 'peru.png'),
+(12, 'MiguelSTB', 'miguelstb.png', 'colombia.png');
 
 -- --------------------------------------------------------
 
@@ -3161,7 +3163,10 @@ INSERT INTO `partidos` (`id`, `competicion_temporada_id`, `fase`, `jornada`, `lo
 (1391, 10, 'L', 12, 134, 124),
 (1392, 10, 'L', 12, 129, 122),
 (1393, 10, 'L', 12, 127, 119),
-(1394, 10, 'L', 12, 132, 133);
+(1394, 10, 'L', 12, 132, 133),
+(1395, 10, 'L', 12, 136, 137),
+(1396, 10, 'L', 12, 131, 125),
+(1397, 10, 'L', 12, 123, 135);
 
 -- --------------------------------------------------------
 
@@ -5181,7 +5186,10 @@ INSERT INTO `sets` (`id`, `partido_id`, `numero_set`, `vida_local`, `vida_visita
 (1579, 1391, 1, 0, 100),
 (1580, 1392, 1, 100, 0),
 (1581, 1393, 1, 1, 0),
-(1582, 1394, 1, 100, 100);
+(1582, 1394, 1, 100, 100),
+(1583, 1395, 1, 92, 0),
+(1584, 1396, 1, 0, 0),
+(1585, 1397, 1, 0, 45);
 
 -- --------------------------------------------------------
 
@@ -5251,7 +5259,8 @@ INSERT INTO `zonas_clasificacion` (`id`, `competicion_temporada_id`, `nombre`, `
 (25, 2, 'Campeón', 1, 1, 'amarillo'),
 (26, 6, 'Campeón', 1, 1, 'amarillo'),
 (27, 3, 'Campeón', 1, 1, 'amarillo'),
-(28, 7, 'Campeón', 1, 1, 'amarillo');
+(28, 7, 'Campeón', 1, 1, 'amarillo'),
+(29, 22, 'Champions', 2, 3, 'azul');
 
 --
 -- Índices para tablas volcadas
@@ -5447,7 +5456,7 @@ ALTER TABLE `competiciones_temporadas`
 -- AUTO_INCREMENT de la tabla `members_equipos`
 --
 ALTER TABLE `members_equipos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de la tabla `members_kills`
@@ -5459,7 +5468,7 @@ ALTER TABLE `members_kills`
 -- AUTO_INCREMENT de la tabla `members_miembros`
 --
 ALTER TABLE `members_miembros`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `members_participantes`
@@ -5519,7 +5528,7 @@ ALTER TABLE `participantes`
 -- AUTO_INCREMENT de la tabla `partidos`
 --
 ALTER TABLE `partidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1395;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1398;
 
 --
 -- AUTO_INCREMENT de la tabla `plazas_especiales`
@@ -5537,7 +5546,7 @@ ALTER TABLE `pokemon`
 -- AUTO_INCREMENT de la tabla `sets`
 --
 ALTER TABLE `sets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1583;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1586;
 
 --
 -- AUTO_INCREMENT de la tabla `temporadas`
@@ -5549,7 +5558,7 @@ ALTER TABLE `temporadas`
 -- AUTO_INCREMENT de la tabla `zonas_clasificacion`
 --
 ALTER TABLE `zonas_clasificacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- Restricciones para tablas volcadas
