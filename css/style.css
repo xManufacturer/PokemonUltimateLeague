@@ -1323,3 +1323,22 @@ tr td:first-child {
     background-color: blue !important;
     color: lightblue !important;
 }
+
+.btn-kill-count-toggle {
+    display: inline-block;
+    position: static;
+    margin: 0 auto;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: blue !important; 
+    color: lightblue !important;        
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color .2s ease, transform .2s ease;
+}
+.btn-kill-count-toggle:hover {
+    background: blueviolet !important;
+    transform: translateY(-1px);
+}

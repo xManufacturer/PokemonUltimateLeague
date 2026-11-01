@@ -1000,9 +1000,49 @@ $resultado = $stmt->get_result();
 
     /*
      * ============================================================
+     * SANCIONES DE LA TEMPORADA
+     * ============================================================
+     * Las sanciones están asociadas a members_equipos.id, por lo que
+     * solo se suman las sanciones de los equipos de esta temporada.
+     */
+
+    $sqlSanciones = "
+        SELECT
+            e.miembro_id,
+            COALESCE(SUM(s.sancion), 0) AS total_sancion
+        FROM members_equipos e
+        INNER JOIN sanciones s
+            ON s.equipo_id = e.id
+        WHERE e.competicion_temporada_id = ?
+        GROUP BY e.miembro_id
+    ";
+
+    $stmtSanciones = $conn->prepare($sqlSanciones);
+    $stmtSanciones->bind_param("i", $competicion_temporada);
+    $stmtSanciones->execute();
+    $resultadoSanciones = $stmtSanciones->get_result();
+
+    $sancionesPorMiembro = [];
+
+    while ($filaSancion = $resultadoSanciones->fetch_assoc()) {
+        $sancionesPorMiembro[(int)$filaSancion["miembro_id"]] =
+            (int)$filaSancion["total_sancion"];
+    }
+
+    foreach ($clasificacion as &$fila) {
+        $miembroId = (int)$fila["id"];
+        $fila["sancion"] = $sancionesPorMiembro[$miembroId] ?? 0;
+        $fila["pts"] -= $fila["sancion"];
+    }
+
+    unset($fila);
+
+
+    /*
+     * ============================================================
      * ORDENACIÓN
      *
-     * 1. Puntos
+     * 1. Puntos netos (después de sanciones)
      * 2. Diferencia de kills
      * 3. Kills a favor
      * ============================================================
@@ -1208,7 +1248,8 @@ $resultado = $stmt->get_result();
                 "kills_favor" => 0,
                 "kills_contra" => 0,
                 "diferencia" => 0,
-                "puntos" => 0
+                "puntos" => 0,
+                "sancion" => 0
             ];
         }
 
@@ -1336,6 +1377,41 @@ $resultado = $stmt->get_result();
 
     /*
      * ============================================================
+     * SANCIONES HISTÓRICAS
+     * Sumar las sanciones de todas las temporadas de esta competición
+     * y descontarlas una sola vez del total histórico de cada miembro.
+     * ============================================================
+     */
+
+    $sqlSancionesHistoricas = "
+        SELECT
+            e.miembro_id,
+            COALESCE(SUM(s.sancion), 0) AS total_sancion
+        FROM members_equipos e
+        INNER JOIN competiciones_temporadas ct
+            ON ct.id = e.competicion_temporada_id
+        INNER JOIN sanciones s
+            ON s.equipo_id = e.id
+        WHERE ct.competicion_id = ?
+        GROUP BY e.miembro_id
+    ";
+
+    $stmtSancionesHistoricas = $conn->prepare($sqlSancionesHistoricas);
+    $stmtSancionesHistoricas->bind_param("i", $competicionId);
+    $stmtSancionesHistoricas->execute();
+    $resultadoSancionesHistoricas = $stmtSancionesHistoricas->get_result();
+
+    while ($filaSancionHistorica = $resultadoSancionesHistoricas->fetch_assoc()) {
+        $miembroIdSancionado = (int)$filaSancionHistorica["miembro_id"];
+        if (isset($miembros[$miembroIdSancionado])) {
+            $descuentoHistorico = (int)$filaSancionHistorica["total_sancion"];
+            $miembros[$miembroIdSancionado]["sancion"] = $descuentoHistorico;
+            $miembros[$miembroIdSancionado]["puntos"] -= $descuentoHistorico;
+        }
+    }
+
+    /*
+     * ============================================================
      * % DE VICTORIAS
      * ============================================================
      */
@@ -1401,21 +1477,12 @@ $resultado = $stmt->get_result();
 
             COUNT(DISTINCT
                 CASE
-                    WHEN mpte.id IS NOT NULL
-                    THEN CONCAT(e.competicion_temporada_id, '-', mpte.partido_id)
+                    WHEN mp.id IS NOT NULL
+                    THEN CONCAT(e.competicion_temporada_id, '-', mp.id)
                 END
             ) AS combates,
 
-            COALESCE(
-                SUM(
-                    CASE
-                        WHEN mk.id IS NOT NULL
-                        THEN mk.kills
-                        ELSE 0
-                    END
-                ),
-                0
-            ) AS kills
+            COALESCE(MAX(kills_pokemon.kills), 0) AS kills
 
         FROM members_pokemon mep
 
@@ -1437,10 +1504,20 @@ $resultado = $stmt->get_result();
             AND mp.competicion_temporada_id = e.competicion_temporada_id
             AND mp.fase = 'L'
 
-        LEFT JOIN members_kills mk
-            ON mk.partido_id = mp.id
-            AND mk.miembro_id = e.miembro_id
-            AND mk.pokemon_id = mep.pokemon_id
+        LEFT JOIN (
+            SELECT
+                mk.pokemon_id,
+                SUM(mk.kills) AS kills
+            FROM members_kills mk
+            INNER JOIN members_partidos mp_k
+                ON mp_k.id = mk.partido_id
+                AND mp_k.fase = 'L'
+            INNER JOIN competiciones_temporadas ct_k
+                ON ct_k.id = mp_k.competicion_temporada_id
+            WHERE ct_k.competicion_id = ?
+            GROUP BY mk.pokemon_id
+        ) kills_pokemon
+            ON kills_pokemon.pokemon_id = p.id
 
         INNER JOIN competiciones_temporadas ct
             ON ct.id = e.competicion_temporada_id
@@ -1462,7 +1539,7 @@ $resultado = $stmt->get_result();
     ";
 
     $stmtKillCount = $conn->prepare($sqlKillCount);
-    $stmtKillCount->bind_param("i", $competicionId);
+    $stmtKillCount->bind_param("ii", $competicionId, $competicionId);
     $stmtKillCount->execute();
 
     $resultadoKillCount = $stmtKillCount->get_result();
