@@ -8,10 +8,6 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $id = (int) $_GET['id'];
 
-// Poké Ball D'Or: por defecto muestra el top 30; permite desplegar toda la clasificación.
-$mostrarTodosKillCount = isset($_GET['mostrar_todos_killcount'])
-    && $_GET['mostrar_todos_killcount'] === '1';
-
 $sql = "SELECT
             ct.competicion_id,
             c.nombre AS competicion,
@@ -296,71 +292,8 @@ if ($datos["tipo"] == "members") {
     $clasificacionMembers = $members["clasificacion"];
     $killCountMembers = $members["killCount"];
 
-    // 1. Obtener el entrenador más reciente (registro con ID más alto en members_pokemon) para cada Pokémon
-    $entrenadorRealPorPokemon = [];
-    $sqlEntrenadorReal = "
-        SELECT mep.pokemon_id, e.miembro_id, mm.nombre AS miembro, mm.imagen AS imagen_miembro
-        FROM members_pokemon mep
-        INNER JOIN members_equipos e ON e.id = mep.equipo_id
-        INNER JOIN members_miembros mm ON mm.id = e.miembro_id
-        WHERE e.competicion_temporada_id = ?
-        ORDER BY mep.id DESC
-    ";
-    $stmtEntrenadorReal = $conn->prepare($sqlEntrenadorReal);
-    if ($stmtEntrenadorReal) {
-        $stmtEntrenadorReal->bind_param("i", $id);
-        $stmtEntrenadorReal->execute();
-        $resultadoEntrenadorReal = $stmtEntrenadorReal->get_result();
-        while ($filaER = $resultadoEntrenadorReal->fetch_assoc()) {
-            $pId = (int)$filaER["pokemon_id"];
-            if (!isset($entrenadorRealPorPokemon[$pId])) {
-                $entrenadorRealPorPokemon[$pId] = [
-                    'miembro_id'     => (int)$filaER["miembro_id"],
-                    'miembro'        => $filaER["miembro"],
-                    'imagen_miembro' => $filaER["imagen_miembro"]
-                ];
-            }
-        }
-        $stmtEntrenadorReal->close();
-    }
-
-    // 2. Obtener todos los entrenadores que ha tenido cada Pokémon para el asterisco
-    $entrenadoresPorPokemonMembers = [];
-    $sqlTodosEntrenadores = "
-        SELECT DISTINCT mep.pokemon_id, e.miembro_id, mm.nombre AS miembro
-        FROM members_pokemon mep
-        INNER JOIN members_equipos e ON e.id = mep.equipo_id
-        INNER JOIN members_miembros mm ON mm.id = e.miembro_id
-        WHERE e.competicion_temporada_id = ?
-    ";
-    $stmtTodos = $conn->prepare($sqlTodosEntrenadores);
-    if ($stmtTodos) {
-        $stmtTodos->bind_param("i", $id);
-        $stmtTodos->execute();
-        $resultadoTodos = $stmtTodos->get_result();
-        while ($filaT = $resultadoTodos->fetch_assoc()) {
-            $pId = (int)$filaT["pokemon_id"];
-            $mId = (int)$filaT["miembro_id"];
-            $mNombre = (string)$filaT["miembro"];
-            if ($pId > 0 && $mId > 0) {
-                $entrenadoresPorPokemonMembers[$pId][$mId] = $mNombre;
-            }
-        }
-        $stmtTodos->close();
-    }
-
-    // 3. Actualizar cada fila de $killCountMembers con su entrenador más reciente real
-    foreach ($killCountMembers as &$filaKill) {
-        $pokemonId = (int)($filaKill["pokemon_id"] ?? 0);
-        if (isset($entrenadorRealPorPokemon[$pokemonId])) {
-            $filaKill["miembro_id"]     = $entrenadorRealPorPokemon[$pokemonId]["miembro_id"];
-            $filaKill["miembro"]        = $entrenadorRealPorPokemon[$pokemonId]["miembro"];
-            $filaKill["imagen_miembro"] = $entrenadorRealPorPokemon[$pokemonId]["imagen_miembro"];
-        }
-    }
-    unset($filaKill);
-
     // Motivos de sanción de los equipos de esta temporada.
+    // Se agrupan por miembro para mostrar el asterisco junto a sus puntos.
     $sancionesMembers = [];
 
     $sqlSanciones = "
@@ -1688,14 +1621,18 @@ $unaColumna = ($totalParticipantes <= 10);
 <?php if ($datos["tipo"] == "members") { ?>
 
     <?php
-    $mostrarDosColumnasCaos = (
-        $datos["competicion"] === "Caos League" &&
-        (int)$datos["temporada"] === 1 &&
-        count($clasificacionMembers) > 7
-    );
+    // Dividir la clasificación Members en dos columnas cuando haya
+    // más de 10 participantes. La primera columna tendrá ceil(n/2)
+    // participantes y la segunda el resto (12 -> 6/6, 14 -> 7/7).
+    $totalParticipantesMembers = count($clasificacionMembers);
+    $mostrarDosColumnasMembers = $totalParticipantesMembers > 10;
+    $tamanoPrimeraColumnaMembers = (int)ceil($totalParticipantesMembers / 2);
 
-    $columnasClasificacionMembers = $mostrarDosColumnasCaos
-        ? [array_slice($clasificacionMembers, 0, 7), array_slice($clasificacionMembers, 7)]
+    $columnasClasificacionMembers = $mostrarDosColumnasMembers
+        ? [
+            array_slice($clasificacionMembers, 0, $tamanoPrimeraColumnaMembers),
+            array_slice($clasificacionMembers, $tamanoPrimeraColumnaMembers)
+        ]
         : [$clasificacionMembers];
     ?>
 
@@ -1723,7 +1660,9 @@ $unaColumna = ($totalParticipantes <= 10);
 
                 <?php
 
-                $posicion = $mostrarDosColumnasCaos ? ($indiceColumna * 7 + 1) : 1;
+                $posicion = $mostrarDosColumnasMembers
+                    ? ($indiceColumna === 0 ? 1 : $tamanoPrimeraColumnaMembers + 1)
+                    : 1;
 
                 foreach ($filasColumna as $fila) {
 
@@ -1805,11 +1744,22 @@ $unaColumna = ($totalParticipantes <= 10);
                             </strong>
                         </td>
 
-                        <td><strong><?php echo $fila["pts"]; ?><?php
+                        <td>
+                            <strong>
+                                <?php echo $fila["pts"]; ?>
+                            </strong><?php
                             $idMiembroFila = (int)$fila["id"];
                             if (!empty($sancionesMembers[$idMiembroFila])) {
                                 $textoMotivos = implode("; ", $sancionesMembers[$idMiembroFila]);
-                                ?><span class="sancion-asterisco" title="<?php echo htmlspecialchars($textoMotivos, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Sanción: <?php echo htmlspecialchars($textoMotivos, ENT_QUOTES, 'UTF-8'); ?>" style="display:inline; margin:0; padding:0; cursor:help; color:blue; font-weight:bold;">*</span><?php } ?></strong></td>
+                                ?>
+                                <span
+                                    class="sancion-asterisco"
+                                    title="<?php echo htmlspecialchars($textoMotivos, ENT_QUOTES, 'UTF-8'); ?>"
+                                    aria-label="Sanción: <?php echo htmlspecialchars($textoMotivos, ENT_QUOTES, 'UTF-8'); ?>"
+                                    style="cursor: help; margin-left: 0; color: #c62828; font-weight: bold;"
+                                >*</span>
+                            <?php } ?>
+                        </td>
 
                     </tr>
 
@@ -1852,7 +1802,6 @@ $unaColumna = ($totalParticipantes <= 10);
 
     <br><h2>Poké Ball D'Or</h2>
 
-    <?php // La vista empieza siempre en el top 30; el resto se despliega dinámicamente con JavaScript. ?>
     <div class="clasificacion-contenedor clasificacion-members kill-count">
         <div class="clasificacion-columna">
 
@@ -1868,12 +1817,11 @@ $unaColumna = ($totalParticipantes <= 10);
 
                 $posicionKill = 1;
 
-                $totalKillCount = count($killCountMembers);
                 foreach ($killCountMembers as $fila) {
-                    $filaOcultaKillCount = $posicionKill > 30;
+
                 ?>
 
-                    <tr<?php echo $filaOcultaKillCount ? ' class="fila-kill-count-oculta" hidden' : ''; ?>>
+                    <tr>
 
     <td>
         <strong>
@@ -1911,28 +1859,9 @@ $unaColumna = ($totalParticipantes <= 10);
 
             <?php } ?>
 
-            <span><?php 
-                echo htmlspecialchars($fila["miembro"], ENT_QUOTES, 'UTF-8'); 
-                
-                $pokemonIdFilaKill = (int)($fila["pokemon_id"] ?? 0);
-                $miembroIdActual = (int)($fila["miembro_id"] ?? 0);
-
-                if (isset($entrenadoresPorPokemonMembers[$pokemonIdFilaKill]) && count($entrenadoresPorPokemonMembers[$pokemonIdFilaKill]) > 1) {
-                    $nombresEntrenadores = [];
-                    foreach ($entrenadoresPorPokemonMembers[$pokemonIdFilaKill] as $mId => $mNombre) {
-                        if ($mId !== $miembroIdActual && $mNombre !== '') {
-                            $nombresEntrenadores[] = $mNombre;
-                        }
-                    }
-
-                    if (!empty($nombresEntrenadores)) {
-                        $textoEntrenadores = 'Otros entrenadores: ' . implode(', ', $nombresEntrenadores);
-                        ?><span class="pokemon-varios-entrenadores-asterisco" title="<?php echo htmlspecialchars($textoEntrenadores, ENT_QUOTES, 'UTF-8'); ?>"
-                        aria-label="<?php echo htmlspecialchars($textoEntrenadores, ENT_QUOTES, 'UTF-8'); ?>" 
-                        style="display:inline; margin:0; padding:0; cursor:help; color:blue; font-weight:bold;">*</span><?php
-                    }
-                }
-            ?></span>
+            <span>
+                <?php echo htmlspecialchars($fila["miembro"]); ?>
+            </span>
 
         </div>
 
@@ -1953,32 +1882,12 @@ $unaColumna = ($totalParticipantes <= 10);
                 <?php
 
                     $posicionKill++;
+
                 }
+
                 ?>
 
             </table>
-            <?php if ($totalKillCount > 30) { ?>
-            <div class="kill-count-control"><br>
-                <button type="button" id="alternar-kill-count" class="btn-kill-count-toggle" aria-expanded="false">
-                    Mostrar todos (<?php echo (int)$totalKillCount; ?>)
-                </button>
-            </div>
-            <script>
-            (function () {
-                var boton = document.getElementById('alternar-kill-count');
-                if (!boton) return;
-                var expandido = false;
-                boton.addEventListener('click', function () {
-                    expandido = !expandido;
-                    document.querySelectorAll('.fila-kill-count-oculta').forEach(function (fila) {
-                        fila.hidden = !expandido;
-                    });
-                    boton.textContent = expandido ? 'Mostrar top 30' : 'Mostrar todos (<?php echo (int)$totalKillCount; ?>)';
-                    boton.setAttribute('aria-expanded', expandido ? 'true' : 'false');
-                });
-            })();
-            </script>
-            <?php } ?>
 
         </div>
 

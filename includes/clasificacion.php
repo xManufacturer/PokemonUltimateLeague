@@ -1562,16 +1562,17 @@ $resultado = $stmt->get_result();
 
     /*
      * ============================================================
-     * MIEMBROS QUE HAN TENIDO CADA POKÉMON
+     * MIEMBROS QUE HAN TENIDO CADA POKÉMON (SIN DUPLICADOS)
      * ============================================================
      */
 
     $sqlMiembrosPokemon = "
-        SELECT DISTINCT
+        SELECT 
             mep.pokemon_id,
             m.id AS miembro_id,
             m.nombre AS miembro,
-            m.imagen AS imagen_miembro
+            m.imagen AS imagen_miembro,
+            MIN(t.numero) AS primera_temporada
         FROM members_pokemon mep
 
         INNER JOIN members_equipos e
@@ -1583,35 +1584,54 @@ $resultado = $stmt->get_result();
         INNER JOIN competiciones_temporadas ct
             ON ct.id = e.competicion_temporada_id
 
+        INNER JOIN temporadas t
+            ON t.id = ct.temporada_id
+
         INNER JOIN competiciones c
             ON c.id = ct.competicion_id
 
         WHERE c.id = ?
 
+        GROUP BY 
+            mep.pokemon_id, 
+            m.id, 
+            m.nombre, 
+            m.imagen
+
         ORDER BY
             mep.pokemon_id ASC,
-            m.nombre ASC
+            primera_temporada ASC
     ";
 
     $stmtMiembrosPokemon = $conn->prepare($sqlMiembrosPokemon);
     $stmtMiembrosPokemon->bind_param("i", $competicionId);
     $stmtMiembrosPokemon->execute();
-
     $resultadoMiembrosPokemon = $stmtMiembrosPokemon->get_result();
 
     while ($fila = $resultadoMiembrosPokemon->fetch_assoc()) {
-
         $pokemonId = (int)$fila["pokemon_id"];
+        $miembroId = (int)$fila["miembro_id"];
 
         if (!isset($killCount[$pokemonId])) {
             continue;
         }
 
-        $killCount[$pokemonId]["miembros"][] = [
-            "id" => (int)$fila["miembro_id"],
-            "nombre" => $fila["miembro"],
-            "imagen" => $fila["imagen_miembro"]
-        ];
+        // Comprobación adicional en PHP por seguridad para evitar duplicados exactos
+        $encontrado = false;
+        foreach ($killCount[$pokemonId]["miembros"] as $mExistente) {
+            if ($mExistente["id"] === $miembroId) {
+                $encontrado = true;
+                break;
+            }
+        }
+
+        if (!$encontrado) {
+            $killCount[$pokemonId]["miembros"][] = [
+                "id" => $miembroId,
+                "nombre" => $fila["miembro"],
+                "imagen" => $fila["imagen_miembro"]
+            ];
+        }
     }
 
 
